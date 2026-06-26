@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="zh-TW"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aegis Industrial - 系統健康</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface": "#e2e2e6",
+                        "on-tertiary": "#452b00",
+                        "error": "#ffb4ab",
+                        "on-primary-container": "#00626e",
+                        "on-error": "#690005",
+                        "tertiary-fixed-dim": "#ffb950",
+                        "on-secondary-fixed": "#002203",
+                        "on-secondary-container": "#007117",
+                        "surface-dim": "#111316",
+                        "on-tertiary-fixed-variant": "#624000",
+                        "outline": "#849396",
+                        "on-secondary": "#003907",
+                        "secondary-fixed": "#72ff70",
+                        "secondary-fixed-dim": "#00e639",
+                        "primary-fixed": "#9cf0ff",
+                        "on-tertiary-container": "#7b5000",
+                        "on-secondary-fixed-variant": "#00530e",
+                        "inverse-primary": "#006875",
+                        "on-primary": "#00363d",
+                        "tertiary-fixed": "#ffddb3",
+                        "secondary": "#ecffe3",
+                        "secondary-container": "#13ff43",
+                        "on-background": "#e2e2e6",
+                        "error-container": "#93000a",
+                        "on-surface-variant": "#bac9cc",
+                        "primary": "#c3f5ff",
+                        "surface": "#111316",
+                        "surface-variant": "#333538",
+                        "on-primary-fixed-variant": "#004f58",
+                        "surface-tint": "#00daf3",
+                        "primary-fixed-dim": "#00daf3",
+                        "inverse-surface": "#e2e2e6",
+                        "surface-container": "#1e2023",
+                        "on-primary-fixed": "#001f24",
+                        "primary-container": "#00e5ff",
+                        "tertiary": "#ffead2",
+                        "tertiary-container": "#ffc779",
+                        "surface-container-high": "#282a2d",
+                        "surface-container-highest": "#333538",
+                        "on-error-container": "#ffdad6",
+                        "inverse-on-surface": "#2f3034",
+                        "background": "#111316",
+                        "surface-bright": "#37393d",
+                        "outline-variant": "#3b494c",
+                        "surface-container-low": "#1a1c1f",
+                        "on-tertiary-fixed": "#291800",
+                        "surface-container-lowest": "#0c0e11"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "xl": "32px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "margin-desktop": "32px",
+                        "lg": "24px",
+                        "base": "4px",
+                        "gutter": "16px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["JetBrains Mono"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "data-sm": ["JetBrains Mono"],
+                        "data-lg": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "700" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "data-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "data-lg": ["20px", { "lineHeight": "28px", "letterSpacing": "0.05em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: theme('colors.background'); color: theme('colors.on-surface'); }
+        .node-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        .grid-bg {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, theme('colors.outline-variant') 1px, transparent 1px),
+                              linear-gradient(to bottom, theme('colors.outline-variant') 1px, transparent 1px);
+            opacity: 0.1;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col md:flex-row overflow-hidden font-body-md">
+<!-- TopNavBar (Mobile Only) -->
+<nav class="md:hidden flex justify-between items-center w-full px-margin-mobile h-16 bg-surface-container border-b border-outline-variant z-50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container">shield</span>
+<span class="font-display-lg text-2xl font-bold text-primary-container tracking-tighter">Aegis Industrial</span>
+</div>
+<button class="text-on-surface-variant"><span class="material-symbols-outlined">menu</span></button>
+</nav>
+<!-- SideNavBar (Desktop Only) -->
+<aside class="hidden md:flex flex-col h-screen py-xl px-md bg-surface-container-low border-r border-outline-variant w-64 flex-shrink-0 z-40 relative">
+<div class="absolute inset-0 grid-bg pointer-events-none"></div>
+<div class="mb-12 relative z-10 flex flex-col items-center">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center border-2 border-primary-container shadow-[0_0_15px_rgba(0,229,255,0.2)] mb-4">
+<span class="material-symbols-outlined text-primary-container text-3xl">shield</span>
+</div>
+<h1 class="font-headline-md text-headline-md text-primary-container text-center">Aegis MVP</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant text-center uppercase">任務控制</p>
+</div>
+<nav class="flex-1 space-y-2 relative z-10">
+<a class="flex items-center gap-3 p-md rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all font-label-caps text-label-caps uppercase" href="#">
+<span class="material-symbols-outlined">dashboard</span> 儀表板
+            </a>
+<a class="flex items-center gap-3 p-md rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all font-label-caps text-label-caps uppercase" href="#">
+<span class="material-symbols-outlined">analytics</span> 遠端遙測
+            </a>
+<a class="flex items-center gap-3 p-md rounded-lg bg-primary-container text-on-primary-container font-bold mb-2 shadow-[0_0_8px_rgba(0,229,255,0.3)] font-label-caps text-label-caps uppercase" href="#">
+<span class="material-symbols-outlined">monitor_heart</span> 系統健康
+            </a>
+<a class="flex items-center gap-3 p-md rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all font-label-caps text-label-caps uppercase" href="#">
+<span class="material-symbols-outlined">list_alt</span> 事件日誌
+            </a>
+<a class="flex items-center gap-3 p-md rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all font-label-caps text-label-caps uppercase" href="#">
+<span class="material-symbols-outlined">hub</span> 網絡拓撲
+            </a>
+</nav>
+<div class="mt-auto relative z-10">
+<button class="w-full py-3 bg-error text-on-error font-label-caps text-label-caps font-bold rounded uppercase hover:bg-error-container hover:text-on-error-container transition-colors shadow-[0_0_10px_rgba(255,180,171,0.5)] flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">warning</span> 緊急停止
+            </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col overflow-hidden relative bg-background">
+<!-- Header -->
+<header class="h-20 flex items-center justify-between px-margin-desktop border-b border-outline-variant bg-surface-container/50 backdrop-blur-sm z-10">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">節點基礎設施網格</h2>
+<div class="flex items-center gap-4 mt-1 font-data-sm text-data-sm text-on-surface-variant">
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-primary-container shadow-[0_0_5px_theme('colors.primary-container')]"></span> 28 健康</span>
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-tertiary-container shadow-[0_0_5px_theme('colors.tertiary-container')]"></span> 3 警告</span>
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-error shadow-[0_0_5px_theme('colors.error')]"></span> 1 危急</span>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="bg-surface border border-outline-variant p-2 flex items-center gap-3 rounded">
+<span class="material-symbols-outlined text-primary-container">ac_unit</span>
+<div>
+<div class="font-label-caps text-label-caps text-on-surface-variant uppercase">主動冷卻</div>
+<div class="font-data-lg text-data-lg text-primary-container">最佳冷卻狀態</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<div class="flex-1 overflow-auto p-margin-desktop relative">
+<div class="absolute inset-0 grid-bg pointer-events-none"></div>
+<div class="max-w-7xl mx-auto space-y-8 relative z-10">
+<!-- Node Heatmap Grid -->
+<div class="bg-surface-container border border-outline-variant rounded-lg p-6">
+<div class="flex justify-between items-center mb-6 border-b border-outline-variant pb-2">
+<h3 class="font-label-caps text-label-caps text-primary-container uppercase tracking-widest">硬體節點狀態圖</h3>
+<span class="font-data-sm text-data-sm text-on-surface-variant font-mono">SEC-A-01 -&gt; SEC-H-04</span>
+</div>
+<div class="grid grid-cols-4 sm:grid-cols-8 gap-2 md:gap-3">
+<!-- Generate 32 nodes with pseudo-random statuses via JS -->
+<script>
+                            const statuses = ['healthy', 'healthy', 'healthy', 'healthy', 'healthy', 'healthy', 'healthy', 'healthy', 
+                                            'warning', 'healthy', 'healthy', 'healthy', 'healthy', 'healthy', 'critical', 'healthy',
+                                            'healthy', 'healthy', 'warning', 'healthy', 'healthy', 'healthy', 'healthy', 'healthy',
+                                            'healthy', 'healthy', 'healthy', 'healthy', 'healthy', 'warning', 'healthy', 'healthy'];
+                            
+                            statuses.forEach((status, i) => {
+                                let colorClass = 'bg-surface border-outline-variant text-on-surface-variant';
+                                let indicator = 'bg-primary-container shadow-[0_0_5px_theme(\'colors.primary-container\')]';
+                                
+                                if(status === 'warning') {
+                                    colorClass = 'bg-surface border-tertiary-container text-tertiary-container shadow-[0_0_10px_rgba(255,199,121,0.1)]';
+                                    indicator = 'bg-tertiary-container shadow-[0_0_8px_theme(\'colors.tertiary-container\')] node-pulse';
+                                } else if (status === 'critical') {
+                                    colorClass = 'bg-surface border-error text-error shadow-[0_0_15px_rgba(255,180,171,0.2)]';
+                                    indicator = 'bg-error shadow-[0_0_10px_theme(\'colors.error\')] node-pulse';
+                                }
+
+                                const row = String.fromCharCode(65 + Math.floor(i / 4));
+                                const col = String((i % 4) + 1).padStart(2, '0');
+                                const id = `${row}-${col}`;
+
+                                document.write(`
+                                    <div class="relative group aspect-square border ${colorClass} rounded flex flex-col items-center justify-center cursor-crosshair hover:bg-surface-container-high transition-colors">
+                                        <div class="absolute top-2 right-2 w-1.5 h-1.5 rounded-full ${indicator}"></div>
+                                        <span class="font-data-sm text-data-sm opacity-50 group-hover:opacity-100 transition-opacity">N${i+1}</span>
+                                        <span class="font-label-caps text-[10px] mt-1 opacity-30 group-hover:opacity-100 hidden sm:block">${id}</span>
+                                        
+                                        <!-- Tooltip -->
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-surface-container-highest border border-outline-variant rounded p-3 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-lg">
+                                            <div class="font-label-caps text-label-caps text-on-surface mb-2 border-b border-outline-variant pb-1">節點 ${id} 詳情</div>
+                                            <div class="flex justify-between font-data-sm text-data-sm"><span class="text-on-surface-variant">CPU:</span> <span class="${status==='critical'?'text-error':'text-primary-container'}">${status==='critical'?'98%':Math.floor(Math.random()*40+20)+'%'}</span></div>
+                                            <div class="flex justify-between font-data-sm text-data-sm"><span class="text-on-surface-variant">溫度:</span> <span class="${status==='warning'?'text-tertiary-container':(status==='critical'?'text-error':'text-primary-container')}">${status==='critical'?'92C':(status==='warning'?'78C':Math.floor(Math.random()*15+45)+'C')}</span></div>
+                                        </div>
+                                    </div>
+                                `);
+                            });
+                        </script>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

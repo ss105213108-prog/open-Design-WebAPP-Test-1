@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="zh-TW"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aegis 工業 MVP - 任務控制</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-background": "#e2e2e6",
+                    "inverse-surface": "#e2e2e6",
+                    "tertiary": "#ffead2",
+                    "on-error-container": "#ffdad6",
+                    "surface-dim": "#111316",
+                    "surface-container-lowest": "#0c0e11",
+                    "on-secondary-container": "#007117",
+                    "on-primary-fixed-variant": "#004f58",
+                    "on-primary-fixed": "#001f24",
+                    "secondary": "#ecffe3",
+                    "on-tertiary-container": "#7b5000",
+                    "surface": "#111316",
+                    "surface-bright": "#37393d",
+                    "tertiary-fixed": "#ffddb3",
+                    "secondary-fixed-dim": "#00e639",
+                    "inverse-on-surface": "#2f3034",
+                    "on-primary-container": "#00626e",
+                    "primary-fixed-dim": "#00daf3",
+                    "on-primary": "#00363d",
+                    "tertiary-container": "#ffc779",
+                    "inverse-primary": "#006875",
+                    "on-secondary": "#003907",
+                    "on-secondary-fixed-variant": "#00530e",
+                    "surface-container-high": "#282a2d",
+                    "surface-variant": "#333538",
+                    "surface-container-highest": "#333538",
+                    "on-surface-variant": "#bac9cc",
+                    "surface-container-low": "#1a1c1f",
+                    "secondary-container": "#13ff43",
+                    "primary": "#c3f5ff",
+                    "secondary-fixed": "#72ff70",
+                    "surface-container": "#1e2023",
+                    "error": "#ffb4ab",
+                    "primary-fixed": "#9cf0ff",
+                    "error-container": "#93000a",
+                    "outline-variant": "#3b494c",
+                    "on-secondary-fixed": "#002203",
+                    "on-surface": "#e2e2e6",
+                    "on-error": "#690005",
+                    "primary-container": "#00e5ff",
+                    "surface-tint": "#00daf3",
+                    "tertiary-fixed-dim": "#ffb950",
+                    "outline": "#849396",
+                    "background": "#111316",
+                    "on-tertiary": "#452b00",
+                    "on-tertiary-fixed": "#291800",
+                    "on-tertiary-fixed-variant": "#624000"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "sm": "8px",
+                    "md": "16px",
+                    "xl": "32px",
+                    "margin-mobile": "16px",
+                    "gutter": "16px",
+                    "base": "4px",
+                    "margin-desktop": "32px",
+                    "xs": "4px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "display-lg": ["Hanken Grotesk"],
+                    "headline-md": ["Hanken Grotesk"],
+                    "data-sm": ["JetBrains Mono"],
+                    "label-caps": ["JetBrains Mono"],
+                    "body-md": ["Hanken Grotesk"],
+                    "data-lg": ["JetBrains Mono"]
+            },
+            "fontSize": {
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "data-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "data-lg": ["20px", {"lineHeight": "28px", "letterSpacing": "0.05em", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #0c0e11;
+            color: #e2e2e6;
+            overflow: hidden;
+        }
+
+        .scanning-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: rgba(0, 218, 243, 0.3);
+            box-shadow: 0 0 8px rgba(0, 218, 243, 0.5);
+            animation: scan 4s linear infinite;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(500%); }
+        }
+
+        .pulse-alert {
+            animation: alert-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes alert-pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.02); }
+        }
+
+        .glow-blue { box-shadow: 0 0 12px rgba(0, 218, 243, 0.2); }
+        .glow-red { box-shadow: 0 0 15px rgba(255, 180, 171, 0.4); }
+        .glow-amber { box-shadow: 0 0 15px rgba(255, 199, 121, 0.4); }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #3b494c; border-radius: 2px; }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .transition-all { transition: all 0.3s ease; }
+
+        .industrial-frame {
+            position: relative;
+            border: 1px solid rgba(132, 147, 150, 0.2);
+            background: rgba(17, 19, 22, 0.4);
+        }
+        .industrial-frame::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            width: 15px;
+            height: 15px;
+            border-top: 2px solid #00daf3;
+            border-left: 2px solid #00daf3;
+        }
+        .industrial-frame::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            right: -1px;
+            width: 15px;
+            height: 15px;
+            border-bottom: 2px solid #00daf3;
+            border-right: 2px solid #00daf3;
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md h-screen flex flex-col overflow-hidden">
+<!-- TopAppBar -->
+<header class="bg-surface-container-lowest border-b border-outline-variant/20 flex justify-between items-center px-margin-desktop h-16 w-full z-40 shrink-0">
+<div class="flex items-center gap-xl">
+<span class="font-display-lg text-headline-md font-bold text-primary tracking-tighter">Aegis 工業 MVP</span>
+<nav class="hidden md:flex items-center gap-lg">
+<button class="text-primary border-b-2 border-primary pb-1 font-body-md text-body-md hover:text-primary transition-colors duration-200" id="nav-normal" onclick="setNormalMode()">正常模式</button>
+<button class="text-on-surface-variant font-body-md text-body-md hover:text-primary transition-colors duration-200" id="nav-ai" onclick="triggerAIIntercept()">AI Intercept</button>
+<button class="text-on-surface-variant font-body-md text-body-md hover:text-primary transition-colors duration-200" id="nav-risk" onclick="triggerHighRisk()">高風險警報</button>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-all cursor-pointer">search</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer">settings</span>
+<div class="relative">
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer">notifications</span>
+<span class="absolute -top-1 -right-1 w-2 h-2 bg-error rounded-full hidden" id="notif-badge"></span>
+</div>
+<div class="w-8 h-8 rounded-full border border-outline-variant bg-surface-variant overflow-hidden">
+<img alt="Operator Profile" class="w-full h-full object-cover" data-alt="Close up portrait of a technical systems operator in a dark environment, subtle blue rim lighting, wearing professional industrial headset, high-tech aesthetic, cinematic lighting, 8k resolution, mission control atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuALSml5ySTu4ZaE92TDv4atzCk7wYFJstxEA9wAvzIanKlv7MffmuD_tRRKOoxpDGsJLySZR1UNWRVBb9Un6RaQ83qFiAFaXpJYz9DLY6op1Nmx50KvLg2EUEiCO50tdYf6taySZPFyrd5IEgnb1XeNzCncBKKt03jhpZeY5vNthjMeSE_8E7IL6V2-g1zHQelCmAdmUB0oyB3-bjcahHAi-BQH79gijJv09pFUW0926s8iegAO_VIXMoFLeSwJMdGsALAYhpNY0Nkc"/>
+</div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- SideNavBar -->
+<aside class="h-full w-64 bg-surface-container-low border-r border-outline-variant/20 flex flex-col py-lg gap-md shrink-0">
+<div class="px-md mb-md">
+<div class="flex items-center gap-sm mb-base">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">terminal</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">核心引擎</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="status-dot bg-secondary-container" id="global-status-dot"></span>
+<span class="font-data-sm text-data-sm text-secondary-container" id="global-status-text">警戒模式已啟動</span>
+</div>
+</div>
+<nav class="flex-1 flex flex-col px-sm gap-xs">
+<a class="flex items-center gap-md p-sm rounded bg-primary-container text-on-primary-container border-r-4 border-primary transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-caps text-label-caps">儀表板</span>
+</a>
+<a class="flex items-center gap-md p-sm rounded text-on-surface-variant hover:bg-surface-variant/50 transition-all" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-caps text-label-caps">遠端遙測</span>
+</a>
+<a class="flex items-center gap-md p-sm rounded text-on-surface-variant hover:bg-surface-variant/50 transition-all" href="#">
+<span class="material-symbols-outlined">monitor_heart</span>
+<span class="font-label-caps text-label-caps">系統健康</span>
+</a>
+<a class="flex items-center gap-md p-sm rounded text-on-surface-variant hover:bg-surface-variant/50 transition-all" href="#">
+<span class="material-symbols-outlined">assignment</span>
+<span class="font-label-caps text-label-caps">事件日誌</span>
+</a>
+<a class="flex items-center gap-md p-sm rounded text-on-surface-variant hover:bg-surface-variant/50 transition-all" href="#">
+<span class="material-symbols-outlined">hub</span>
+<span class="font-label-caps text-label-caps">網絡拓撲</span>
+</a>
+</nav>
+<div class="px-md mt-auto pt-md border-t border-outline-variant/10">
+<button class="w-full bg-error-container text-on-error-container py-sm font-label-caps text-label-caps rounded hover:brightness-125 transition-all mb-md active:scale-95">緊急停止</button>
+<div class="flex flex-col gap-xs">
+<a class="flex items-center gap-md p-sm text-on-surface-variant hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-caps text-label-caps">幫助</span>
+</a>
+<a class="flex items-center gap-md p-sm text-on-surface-variant hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-caps text-label-caps">登出</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto bg-surface-dim p-margin-desktop relative flex flex-col gap-lg">
+<!-- Reactor Viewport -->
+<div class="relative w-full h-[50vh] industrial-frame flex items-center justify-center overflow-hidden shrink-0" id="reactor-viewport">
+<div class="absolute top-md left-md z-10">
+<div class="flex items-center gap-sm">
+<span class="status-dot bg-primary animate-pulse"></span>
+<span class="font-label-caps text-label-caps text-primary">CORE_SIMULATION_ACTIVE</span>
+</div>
+<div class="font-data-sm text-data-sm text-on-surface-variant">反應爐單元 01 // 區域 7-G</div>
+</div>
+<div class="absolute bottom-md right-md z-10 flex gap-xl text-right">
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant">延遲</p>
+<p class="font-data-lg text-data-lg text-primary">12ms</p>
+</div>
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant">重試次數</p>
+<p class="font-data-lg text-data-lg text-secondary-fixed" id="retries-count">0</p>
+</div>
+</div>
+<!-- Three.js Container -->
+<div class="w-full h-full" id="animation-container"></div>
+</div>
+<!-- Dashboard Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter shrink-0">
+<!-- Card 1: Reactor Core Pressure -->
+<div class="bg-surface-container border border-outline-variant/20 p-md relative overflow-hidden group">
+<div class="scanning-line"></div>
+<div class="absolute top-0 left-0 w-full h-[2px] bg-secondary-container" id="card-1-border"></div>
+<div class="flex justify-between items-start mb-lg">
+<span class="font-label-caps text-label-caps text-on-surface-variant">反應爐核心壓力</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm">more_vert</span>
+</div>
+<div class="flex items-end gap-sm mb-md">
+<span class="font-data-lg text-display-lg text-on-background leading-none" id="val-1">104.2</span>
+<span class="font-data-sm text-data-sm text-on-surface-variant pb-base">PSI</span>
+</div>
+<div class="h-16 w-full opacity-50">
+<div class="flex items-end gap-1 h-full">
+<div class="w-full bg-primary/20 h-1/2"></div>
+<div class="w-full bg-primary/20 h-2/3"></div>
+<div class="w-full bg-primary/20 h-1/2"></div>
+<div class="w-full bg-primary/20 h-3/4"></div>
+<div class="w-full bg-primary/20 h-1/2"></div>
+</div>
+</div>
+</div>
+<!-- Card 2: Turbine RPM -->
+<div class="bg-surface-container border border-outline-variant/20 p-md relative overflow-hidden group">
+<div class="scanning-line"></div>
+<div class="absolute top-0 left-0 w-full h-[2px] bg-secondary-container" id="card-2-border"></div>
+<div class="flex justify-between items-start mb-lg">
+<span class="font-label-caps text-label-caps text-on-surface-variant">渦輪轉速</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm">more_vert</span>
+</div>
+<div class="flex items-end gap-sm mb-md">
+<span class="font-data-lg text-display-lg text-on-background leading-none" id="val-2">3200</span>
+<span class="font-data-sm text-data-sm text-on-surface-variant pb-base">RPM</span>
+</div>
+<div class="h-16 w-full opacity-50 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-4xl animate-spin" style="animation-duration: 3s">settings_backup_restore</span>
+</div>
+</div>
+<!-- Card 3: Neural Link Stability -->
+<div class="bg-surface-container border border-outline-variant/20 p-md relative overflow-hidden group">
+<div class="scanning-line"></div>
+<div class="absolute top-0 left-0 w-full h-[2px] bg-secondary-container" id="card-3-border"></div>
+<div class="flex justify-between items-start mb-lg">
+<span class="font-label-caps text-label-caps text-on-surface-variant">神經連結穩定度</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm">more_vert</span>
+</div>
+<div class="flex items-end gap-sm mb-md">
+<span class="font-data-lg text-display-lg text-on-background leading-none" id="val-3">99.8</span>
+<span class="font-data-sm text-data-sm text-on-surface-variant pb-base">%</span>
+</div>
+<div class="flex gap-xs">
+<div class="h-1 flex-1 bg-secondary-container"></div>
+<div class="h-1 flex-1 bg-secondary-container"></div>
+<div class="h-1 flex-1 bg-secondary-container"></div>
+<div class="h-1 flex-1 bg-secondary-container/20"></div>
+</div>
+</div>
+<!-- Card 4: I/O Stream -->
+<div class="bg-surface-container border border-outline-variant/20 p-md relative overflow-hidden group">
+<div class="scanning-line"></div>
+<div class="absolute top-0 left-0 w-full h-[2px] bg-secondary-container" id="card-4-border"></div>
+<div class="flex justify-between items-start mb-lg">
+<span class="font-label-caps text-label-caps text-on-surface-variant">I/O 串流</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm">more_vert</span>
+</div>
+<div class="flex items-end gap-sm mb-md">
+<span class="font-data-lg text-display-lg text-on-background leading-none" id="val-4">12.4</span>
+<span class="font-data-sm text-data-sm text-on-surface-variant pb-base">GB/S</span>
+</div>
+<div class="font-data-sm text-data-sm text-secondary-container/80 truncate">
+                        STREAM_SECURE_HASH: 0x82...F4
+                    </div>
+</div>
+</div>
+<!-- Secondary Analytics Row -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter pb-lg">
+<!-- Event Logs Bento -->
+<div class="lg:col-span-2 bg-surface-container-low border border-outline-variant/20 rounded overflow-hidden">
+<div class="p-md border-b border-outline-variant/10 flex justify-between items-center bg-surface-container">
+<span class="font-label-caps text-label-caps text-on-background">系統事件日誌</span>
+<button class="text-primary font-label-caps text-label-caps hover:underline">查看完整日誌</button>
+</div>
+<div class="p-md space-y-sm max-h-64 overflow-y-auto font-data-sm text-data-sm" id="log-container">
+<div class="flex gap-md border-b border-outline-variant/10 pb-sm">
+<span class="text-on-surface-variant">[08:42:01]</span>
+<span class="text-secondary-fixed">INF</span>
+<span class="text-on-surface">開機程序完成。線束就緒。</span>
+</div>
+<div class="flex gap-md border-b border-outline-variant/10 pb-sm">
+<span class="text-on-surface-variant">[08:45:12]</span>
+<span class="text-secondary-fixed">INF</span>
+<span class="text-on-surface">散熱器運作中。ΔT: 1.2K。</span>
+</div>
+<div class="flex gap-md border-b border-outline-variant/10 pb-sm">
+<span class="text-on-surface-variant">[08:50:44]</span>
+<span class="text-primary">NET</span>
+<span class="text-on-surface">與節點 Alpha 的加密連線成功。</span>
+</div>
+</div>
+</div>
+<!-- Network Visualization Area -->
+<div class="bg-surface-container-low border border-outline-variant/20 rounded relative p-md flex flex-col justify-center items-center text-center">
+<div class="absolute top-md left-md">
+<span class="font-label-caps text-label-caps text-on-surface-variant">網絡拓撲</span>
+</div>
+<div class="w-full h-48 bg-surface-container-lowest border border-outline-variant/10 rounded mb-md overflow-hidden flex items-center justify-center">
+<!-- Visual representation of network nodes -->
+<div class="relative w-32 h-32">
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-4 bg-primary-container rounded-full glow-blue"></div>
+<div class="absolute bottom-0 left-0 w-4 h-4 bg-primary-container rounded-full glow-blue"></div>
+<div class="absolute bottom-0 right-0 w-4 h-4 bg-primary-container rounded-full glow-blue"></div>
+<svg class="w-full h-full stroke-primary/30 fill-none">
+<path d="M64,8 L16,112 M64,8 L112,112 M16,112 L112,112" stroke-width="1"></path>
+</svg>
+</div>
+</div>
+<p class="font-data-sm text-data-sm text-on-surface-variant">網狀網絡運行時間：142h 12m 04s</p>
+</div>
+</div>
+<!-- Interactive Overlays -->
+<!-- AI Intercept Alert Overlay (Toast) -->
+<div class="fixed top-20 right-8 transform translate-x-full transition-transform duration-500 ease-in-out z-50" id="ai-toast">
+<div class="bg-error-container border-2 border-error p-lg rounded-lg shadow-2xl flex items-center gap-lg max-w-md glow-red">
+<span class="material-symbols-outlined text-on-error text-4xl animate-pulse">warning</span>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-error-container">嚴重幻覺錯誤</h3>
+<p class="font-body-md text-body-md text-on-error-container">神經連結偵測到異常。抑制已啟動。</p>
+</div>
+</div>
+</div>
+<!-- Success Recovery Overlay -->
+<div class="fixed top-20 right-8 transform translate-x-full transition-transform duration-500 ease-in-out z-50" id="success-toast">
+<div class="bg-secondary-container border-2 border-on-secondary-container p-lg rounded-lg shadow-2xl flex items-center gap-lg max-w-md glow-blue">
+<span class="material-symbols-outlined text-on-secondary-container text-4xl">verified_user</span>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-secondary-container">威脅已消除</h3>
+<p class="font-body-md text-body-md text-on-secondary-container">已由 Aegis 系統攔截並修正。</p>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Modal: Trigger Alert -->
+<div class="fixed inset-0 bg-background/80 backdrop-blur-md z-[100] flex items-center justify-center hidden" id="alert-modal">
+<div class="bg-surface-container-high border-2 border-tertiary-container p-xl rounded-xl max-w-lg w-full glow-amber pulse-alert">
+<div class="flex items-center gap-lg mb-lg">
+<span class="material-symbols-outlined text-tertiary-container text-5xl" style="font-variation-settings: 'FILL' 1;">security</span>
+<h2 class="font-display-lg text-headline-md text-tertiary-container">需要人工確認</h2>
+</div>
+<p class="font-body-md text-body-md text-on-background mb-xl">
+                區域 7-G 偵測到高風險操作。Aegis 系統在繼續請求的反應爐序列之前需要手動驗證。
+            </p>
+<div class="grid grid-cols-2 gap-md">
+<button class="bg-tertiary-container text-on-tertiary-container py-md font-label-caps text-label-caps rounded-lg hover:brightness-110 active:scale-95 transition-all" onclick="closeModal()">授權操作</button>
+<button class="border border-outline text-on-surface py-md font-label-caps text-label-caps rounded-lg hover:bg-surface-variant active:scale-95 transition-all" onclick="closeModal()">手動覆蓋</button>
+</div>
+</div>
+</div>
+<script>
+        const aiToast = document.getElementById('ai-toast');
+        const successToast = document.getElementById('success-toast');
+        const alertModal = document.getElementById('alert-modal');
+        const logContainer = document.getElementById('log-container');
+        const globalStatusDot = document.getElementById('global-status-dot');
+        const globalStatusText = document.getElementById('global-status-text');
+        const retryDisplay = document.getElementById('retries-count');
+        const notifBadge = document.getElementById('notif-badge');
+
+        const navLinks = [
+            document.getElementById('nav-normal'),
+            document.getElementById('nav-ai'),
+            document.getElementById('nav-risk')
+        ];
+
+        function setActiveNav(id) {
+            navLinks.forEach(link => {
+                link.classList.remove('text-primary', 'border-b-2', 'border-primary', 'pb-1');
+                link.classList.add('text-on-surface-variant');
+            });
+            const active = document.getElementById(id);
+            active.classList.add('text-primary', 'border-b-2', 'border-primary', 'pb-1');
+            active.classList.remove('text-on-surface-variant');
+        }
+
+        function addLog(type, message, colorClass = "text-on-surface") {
+            const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
+            const logEntry = document.createElement('div');
+            logEntry.className = "flex gap-md border-b border-outline-variant/10 pb-sm animate-pulse";
+            logEntry.innerHTML = `
+                <span class="text-on-surface-variant">[${time}]</span>
+                <span class="${colorClass === 'text-error' ? 'text-error' : 'text-primary'}">${type}</span>
+                <span class="${colorClass}">${message}</span>
+            `;
+            logContainer.prepend(logEntry);
+        }
+
+        function setNormalMode() {
+            setActiveNav('nav-normal');
+            globalStatusDot.className = "status-dot bg-secondary-container";
+            globalStatusText.innerText = "警戒模式已啟動";
+            globalStatusText.className = "font-data-sm text-data-sm text-secondary-container";
+            retryDisplay.innerText = "0";
+            notifBadge.classList.add('hidden');
+            document.querySelectorAll('[id^="card-"]').forEach(el => el.classList.remove('bg-error/10'));
+            addLog("SYS", "系統已恢復至基準正常狀態。");
+        }
+
+        function triggerAIIntercept() {
+            setActiveNav('nav-ai');
+            notifBadge.classList.remove('hidden');
+            aiToast.style.transform = 'translateX(0)';
+            addLog("ERR", "嚴重：偵測到 AI 幻覺", "text-error");
+            document.querySelectorAll('[id^="card-"]').forEach(el => el.classList.add('bg-error/10'));
+            setTimeout(() => {
+                aiToast.style.transform = 'translateX(120%)';
+                successToast.style.transform = 'translateX(0)';
+                retryDisplay.innerText = "1";
+                addLog("SEC", "已由 Aegis 系統攔截並修正。", "text-primary");
+                setTimeout(() => {
+                    successToast.style.transform = 'translateX(120%)';
+                    document.querySelectorAll('[id^="card-"]').forEach(el => el.classList.remove('bg-error/10'));
+                }, 3000);
+            }, 1500);
+        }
+
+        function triggerHighRisk() {
+            setActiveNav('nav-risk');
+            alertModal.classList.remove('hidden');
+            addLog("WRN", "請求操作員介入：區域 7-G。", "text-tertiary-fixed");
+        }
+
+        function closeModal() {
+            alertModal.classList.add('hidden');
+            addLog("SYS", "操作員已驗證操作。恢復中...");
+        }
+
+        // Initialize 3D Reactor Model
+        const initReactor = () => {
+            const container = document.getElementById('animation-container');
+            const width = container.clientWidth || window.innerWidth;
+            const height = container.clientHeight || window.innerHeight;
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+            camera.position.z = 5;
+
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0x404040, 2);
+            scene.add(ambientLight);
+            const pointLight = new THREE.PointLight(0x00e5ff, 5, 50);
+            pointLight.position.set(5, 5, 5);
+            scene.add(pointLight);
+
+            // Reactor Core Geometry
+            const coreGroup = new THREE.Group();
+
+            // Inner Core (Glowy sphere)
+            const innerCoreGeo = new THREE.SphereGeometry(1, 32, 32);
+            const innerCoreMat = new THREE.MeshPhongMaterial({
+                color: 0x00e5ff,
+                emissive: 0x00e5ff,
+                emissiveIntensity: 0.5,
+                shininess: 100,
+                transparent: true,
+                opacity: 0.8
+            });
+            const innerCore = new THREE.Mesh(innerCoreGeo, innerCoreMat);
+            coreGroup.add(innerCore);
+
+            // Outer Rings
+            const ringGeo = new THREE.TorusGeometry(1.5, 0.05, 16, 100);
+            const ringMat = new THREE.MeshPhongMaterial({ color: 0x37393d });
+
+            const ring1 = new THREE.Mesh(ringGeo, ringMat);
+            const ring2 = new THREE.Mesh(ringGeo, ringMat);
+            ring2.rotation.x = Math.PI / 2;
+            const ring3 = new THREE.Mesh(ringGeo, ringMat);
+            ring3.rotation.y = Math.PI / 2;
+
+            coreGroup.add(ring1, ring2, ring3);
+
+            // Support Structure (Vertical cylinders)
+            const supportGeo = new THREE.CylinderGeometry(0.05, 0.05, 4, 8);
+            const supportMat = new THREE.MeshPhongMaterial({ color: 0x1a1c1f });
+
+            for(let i = 0; i < 4; i++) {
+                const support = new THREE.Mesh(supportGeo, supportMat);
+                const angle = (i / 4) * Math.PI * 2;
+                support.position.x = Math.cos(angle) * 1.8;
+                support.position.z = Math.sin(angle) * 1.8;
+                coreGroup.add(support);
+            }
+
+            scene.add(coreGroup);
+
+            // Animation Loop
+            let time = 0;
+            function animate() {
+                requestAnimationFrame(animate);
+                time += 0.01;
+
+                coreGroup.rotation.y += 0.005;
+                ring1.rotation.z += 0.01;
+                ring2.rotation.y += 0.01;
+                ring3.rotation.x += 0.01;
+
+                // Pulsing effect
+                const pulse = 1 + Math.sin(time * 2) * 0.1;
+                innerCore.scale.set(pulse, pulse, pulse);
+                innerCoreMat.emissiveIntensity = 0.5 + Math.sin(time * 2) * 0.3;
+
+                renderer.render(scene, camera);
+            }
+
+            animate();
+
+            // Resize Handler
+            window.addEventListener('resize', () => {
+                const newWidth = container.clientWidth || window.innerWidth;
+                const newHeight = container.clientHeight || window.innerHeight;
+                camera.aspect = newWidth / newHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(newWidth, newHeight);
+            });
+        };
+
+        initReactor();
+
+        // Mini Data Updates
+        setInterval(() => {
+            document.getElementById('val-1').innerText = (104.2 + (Math.random() * 0.5 - 0.25)).toFixed(1);
+            document.getElementById('val-3').innerText = (99.8 + (Math.random() * 0.2 - 0.1)).toFixed(1);
+        }, 2000);
+    </script>
+</body></html>

@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html class="dark" lang="zh-TW">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Aegis 工業 AI 監控系統</title>
+    
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    
+    <!-- Three.js (For Reactor 3D Simulation) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Custom Style Sheet -->
+    <link href="styles.css" rel="stylesheet"/>
+
+    <!-- Tailwind Configuration -->
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-background": "#e2e2e6",
+                        "inverse-surface": "#e2e2e6",
+                        "tertiary": "#ffead2",
+                        "on-error-container": "#ffdad6",
+                        "surface-dim": "#111316",
+                        "surface-container-lowest": "#0c0e11",
+                        "on-secondary-container": "#007117",
+                        "on-primary-fixed-variant": "#004f58",
+                        "on-primary-fixed": "#001f24",
+                        "secondary": "#ecffe3",
+                        "on-tertiary-container": "#7b5000",
+                        "surface": "#111316",
+                        "surface-bright": "#37393d",
+                        "tertiary-fixed": "#ffddb3",
+                        "secondary-fixed-dim": "#00e639",
+                        "inverse-on-surface": "#2f3034",
+                        "on-primary-container": "#00626e",
+                        "primary-fixed-dim": "#00daf3",
+                        "on-primary": "#00363d",
+                        "tertiary-container": "#ffc779",
+                        "inverse-primary": "#006875",
+                        "on-secondary": "#003907",
+                        "on-secondary-fixed-variant": "#00530e",
+                        "surface-container-high": "#282a2d",
+                        "surface-variant": "#333538",
+                        "surface-container-highest": "#333538",
+                        "on-surface-variant": "#bac9cc",
+                        "surface-container-low": "#1a1c1f",
+                        "secondary-container": "#13ff43",
+                        "primary": "#c3f5ff",
+                        "secondary-fixed": "#72ff70",
+                        "surface-container": "#1e2023",
+                        "error": "#ffb4ab",
+                        "primary-fixed": "#9cf0ff",
+                        "error-container": "#93000a",
+                        "outline-variant": "#3b494c",
+                        "on-secondary-fixed": "#002203",
+                        "on-surface": "#e2e2e6",
+                        "on-error": "#690005",
+                        "primary-container": "#00e5ff",
+                        "surface-tint": "#00daf3",
+                        "tertiary-fixed-dim": "#ffb950",
+                        "outline": "#849396",
+                        "background": "#111316",
+                        "on-tertiary": "#452b00",
+                        "on-tertiary-fixed": "#291800",
+                        "on-tertiary-fixed-variant": "#624000"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "md": "16px",
+                        "xl": "32px",
+                        "margin-mobile": "16px",
+                        "gutter": "16px",
+                        "base": "4px",
+                        "margin-desktop": "32px",
+                        "xs": "4px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "data-sm": ["JetBrains Mono"],
+                        "label-caps": ["JetBrains Mono"],
+                        "body-md": ["Hanken Grotesk"],
+                        "data-lg": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "data-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "data-lg": ["20px", {"lineHeight": "28px", "letterSpacing": "0.05em", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-body-md text-body-md h-screen flex flex-col md:flex-row overflow-hidden bg-background text-on-surface">
+
+    <!-- Mobile Top Header Bar -->
+    <header class="md:hidden flex justify-between items-center w-full px-margin-mobile h-16 bg-surface-container border-b border-outline-variant/30 shrink-0 z-50">
+        <div class="flex items-center gap-sm">
+            <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">terminal</span>
+            <span class="font-display-lg text-2xl font-bold text-primary tracking-tighter">Aegis Industrial</span>
+        </div>
+        <button id="mobile-menu-toggle" class="text-on-surface-variant focus:outline-none">
+            <span class="material-symbols-outlined text-2xl">menu</span>
+        </button>
+    </header>
+
+    <!-- Global Navigation Sidebar (Desktop & collapsible Mobile drawer) -->
+    <aside id="sidebar" class="fixed md:static inset-y-0 left-0 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out h-full w-64 bg-surface-container-low border-r border-outline-variant/20 flex flex-col py-lg gap-md shrink-0 z-45">
+        <!-- Sidebar Header -->
+        <div class="px-md mb-md">
+            <div class="flex items-center gap-sm mb-base">
+                <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">terminal</span>
+                <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Aegis 核心引擎</span>
+            </div>
+            <div class="flex items-center gap-xs">
+                <span class="status-dot bg-secondary-container" id="global-status-dot"></span>
+                <span class="font-data-sm text-data-sm text-secondary-container" id="global-status-text">警戒模式已啟動</span>
+            </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="flex-1 flex flex-col px-sm gap-xs" id="nav-links">
+            <a class="flex items-center gap-md p-sm rounded text-on-surface hover:bg-surface-variant/50 transition-all font-label-caps text-label-caps" href="#mission-control" data-view="mission-control">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span>任務控制</span>
+            </a>
+            <a class="flex items-center gap-md p-sm rounded text-on-surface hover:bg-surface-variant/50 transition-all font-label-caps text-label-caps" href="#telemetry" data-view="telemetry">
+                <span class="material-symbols-outlined">analytics</span>
+                <span>遠端遙測</span>
+            </a>
+            <a class="flex items-center gap-md p-sm rounded text-on-surface hover:bg-surface-variant/50 transition-all font-label-caps text-label-caps" href="#system-health" data-view="system-health">
+                <span class="material-symbols-outlined">monitor_heart</span>
+                <span>系統健康</span>
+            </a>
+            <a class="flex items-center gap-md p-sm rounded text-on-surface hover:bg-surface-variant/50 transition-all font-label-caps text-label-caps" href="#event-log" data-view="event-log">
+                <span class="material-symbols-outlined">list_alt</span>
+                <span>事件日誌</span>
+            </a>
+            <a class="flex items-center gap-md p-sm rounded text-on-surface hover:bg-surface-variant/50 transition-all font-label-caps text-label-caps" href="#network-topology" data-view="network-topology">
+                <span class="material-symbols-outlined">hub</span>
+                <span>網絡拓撲</span>
+            </a>
+        </nav>
+
+        <!-- Sidebar Footer Actions -->
+        <div class="px-md mt-auto pt-md border-t border-outline-variant/10">
+            <button id="btn-emergency-stop" class="w-full bg-error-container text-on-error-container py-sm font-label-caps text-label-caps rounded hover:brightness-125 transition-all mb-md active:scale-95 flex items-center justify-center gap-sm">
+                <span class="material-symbols-outlined text-[16px]">warning</span>
+                <span>緊急停止</span>
+            </button>
+            <div class="flex flex-col gap-xs">
+                <a class="flex items-center gap-md p-sm text-on-surface-variant hover:text-primary transition-all font-label-caps text-label-caps" href="#">
+                    <span class="material-symbols-outlined">help</span>
+                    <span>幫助</span>
+                </a>
+                <a class="flex items-center gap-md p-sm text-on-surface-variant hover:text-primary transition-all font-label-caps text-label-caps" href="#">
+                    <span class="material-symbols-outlined">logout</span>
+                    <span>登出</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col overflow-hidden relative">
+        <!-- Top App Bar (Desktop and Header Actions) -->
+        <header class="bg-surface-container-lowest border-b border-outline-variant/20 flex justify-between items-center px-margin-desktop h-16 w-full z-40 shrink-0">
+            <div class="flex items-center gap-xl h-full">
+                <span class="hidden md:block font-display-lg text-headline-md font-bold text-primary tracking-tighter mr-md">Aegis 工業系統</span>
+                <!-- Contextual Header Actions (Dynamic depending on page) -->
+                <nav id="header-context-actions" class="flex items-center gap-lg h-full"></nav>
+            </div>
+
+            <!-- Global Top Bar Actions -->
+            <div class="flex items-center gap-md">
+                <!-- Search -->
+                <div id="global-search-container" class="hidden md:flex bg-surface-dim border border-outline-variant rounded overflow-hidden focus-within:border-primary-container transition-all">
+                    <div class="pl-sm flex items-center justify-center text-on-surface-variant">
+                        <span class="material-symbols-outlined text-[18px]">search</span>
+                    </div>
+                    <input id="global-search" class="bg-transparent border-none text-data-sm font-data-sm text-on-surface placeholder-on-surface-variant focus:ring-0 py-xs px-sm w-48" placeholder="搜尋遙測/日誌..." type="text"/>
+                </div>
+
+                <!-- Notifications -->
+                <div class="relative">
+                    <button class="p-xs text-on-surface-variant hover:text-primary rounded transition-colors active:scale-95 flex items-center justify-center">
+                        <span class="material-symbols-outlined">notifications</span>
+                    </button>
+                    <span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full hidden" id="notif-badge"></span>
+                </div>
+                
+                <!-- Settings -->
+                <button class="p-xs text-on-surface-variant hover:text-primary rounded transition-colors active:scale-95 flex items-center justify-center">
+                    <span class="material-symbols-outlined">settings</span>
+                </button>
+
+                <!-- Profile Avatar -->
+                <div class="w-8 h-8 rounded-full border border-outline-variant bg-surface-variant overflow-hidden shrink-0">
+                    <img alt="Operator Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALSml5ySTu4ZaE92TDv4atzCk7wYFJstxEA9wAvzIanKlv7MffmuD_tRRKOoxpDGsJLySZR1UNWRVBb9Un6RaQ83qFiAFaXpJYz9DLY6op1Nmx50KvLg2EUEiCO50tdYf6taySZPFyrd5IEgnb1XeNzCncBKKt03jhpZeY5vNthjMeSE_8E7IL6V2-g1zHQelCmAdmUB0oyB3-bjcahHAi-BQH79gijJv09pFUW0926s8iegAO_VIXMoFLeSwJMdGsALAYhpNY0Nkc"/>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dynamic View Container -->
+        <main id="view-container" class="flex-1 overflow-y-auto bg-surface-dim relative flex flex-col">
+            <!-- Dynamically Loaded View Appears Here -->
+        </main>
+    </div>
+
+    <!-- Backdrop Overlay for Mobile Navigation Drawer -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-background/80 backdrop-blur-sm z-44 hidden md:hidden"></div>
+
+    <!-- ========================================== -->
+    <!--          DYNAMIC PAGE TEMPLATES            -->
+    <!-- ========================================== -->
+
+    <!-- TEMPLATE 1: Mission Control (任務控制) -->
+    <template id="tpl-mission-control">
+        <div class="p-margin-desktop flex flex-col gap-lg w-full flex-1 overflow-y-auto">
+            <!-- Reactor Viewport -->
+            <div class="relative w-full h-[50vh] industrial-frame flex items-center justify-center overflow-hidden shrink-0" id="reactor-viewport">
+                <div class="absolute top-md left-md z-10">
+                    <div class="flex items-center gap-sm">
+                        <span class="status-dot bg-primary animate-pulse"></span>
+                        <span class="font-label-caps text-label-caps text-primary">CORE_SIMULATION_ACTIVE</span>
+                    </div>
+                    <div class="font-data-sm text-data-sm text-on-surface-variant">反應爐單元 01 // 區域 7-G</div>
+                </div>
+                <div class="absolute bottom-md right-md z-10 flex gap-xl text-right">
+                    <div>
+                        <p class="font-label-caps text-label-caps text-on-surface-variant">延遲</p>
+                        <p class="font-data-lg text-data-lg text-primary">12ms</p>
+                    </div>
+                    <div>
+                        <p class="font-label-caps text-label-caps text-on-surface-variant">重試次數</p>
+                        <p class="font-data-lg text-data-lg text-secondary-fixed" id="retries-count">0</p>
+                    </div>
+                </div>
+                <!-- Three.js Container -->
+                <div class="w-full h-full" id="animation-container"></div>
+            </div>
+
+            <!-- Dashboard Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter shrink-0">
+                <!-- Card 1: Reactor Core Pressure -->
+                <div class="bg-surface-container border border-outline-variant/20 p-md relative overflow-hidden group card-3d-hover" id="card-1">
+                    <div class="scanning-line"></div>
+                    <div class="absolute top-0 left-0 w-full h-[2px] bg-secondary-container" id="card-1-border"></div>
+                    <div class="flex justify-between items-start mb-lg">
+                        <span class="font-label-caps text-label-caps text-on-surface-variant">反應爐核心壓力</span>
+                        <span class="material-symbols-outlined text-on-surface-variant text-sm">more_vert</span>
+                    </div>
+                    <div class="flex items-end gap-sm mb-md">
+                        <span class="font-data-lg text-display-lg text-on-background leading-none" id="val-1">104.2</span>
+                        <span class="font-data-sm text-data-sm text-on-surface-variant pb-base">PSI</span>
+                    </div>
+                    <div class="h-16 w-full opacity-50">
+                        <div class="flex items-end gap-1 h-full">
+                            <div class="w-full bg-primary/20 h-1/2 animate-pulse" style="animation-delay: 0.1s"></div>
+                            <div class="w-full bg-primary/20 h-2/3 animate-pulse" style="animation-delay: 0.2s"></div>
+                            <div class="w-full bg-primary/20 h-1/2 animate-pulse" style="animation-delay: 0.3s"></div>
+                            <div class="w-full bg-primary/20 h-3/4 animate-pulse" style="animation-delay: 0.4s"></div>
+                            <div class="w-full bg-primary/20 h-1/2 animate-pulse" style="animation-delay: 0.5s"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 2: Turbine RPM -->
+                <div class="bg-surface-container border border-outline-variant/20 p-md relative overflow-hidden group card-3d-hover" id="card-2">
+                    <div class="scanning-line"></div>
+                    <div class="absolute top-0 left-0 w-full h-[2px] bg-secondary-container" id="card-2-border"></div>
+                    <div class="flex justify-between items-start mb-lg">
+                        <span class="font-label-caps text-label-caps text-on-surface-variant">渦輪轉速</span>
+                        <span class="material-symbols-outlined text-on-surface-variant text-sm">more_vert</span>
+                    </div>
+                    <div class="flex items-end gap-sm mb-md">
+                        <span class="font-data-lg text-display-lg text-on-background leading-none" id="val-2">3200</span>
+                        <span class="font-data-sm text-data-sm text-on-surface-variant pb-base">RPM</span>
+                    </div>
+                    <div class="h-16 w-full opacity-50 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-4xl animate-spin" style="animation-duration: 3s">settings_backup_restore</span>
+                    </div>
+                </div>
+                <!-- Card 3: Neural Link Stability -->
+                <div class="bg-surface-container border border-outline-variant/20 p-md relative overflow-hidden group card-3d-hover" id="card-3">
+                    <div class="scanning-line"></div>
+                    <div class="absolute top-0 left-0 w-full h-[2px] bg-secondary-container" id="card-3-border"></div>
+                    <div class="flex justify-between items-start mb-lg">
+                        <span class="font-label-caps text-label-caps text-on-surface-variant">神經連結穩定度</span>
+                        <span class="material-symbols-outlined text-on-surface-variant text-sm">more_vert</span>
+                    </div>
+                    <div class="flex items-end gap-sm mb-md">
+                        <span class="font-data-lg text-display-lg text-on-background leading-none" id="val-3">99.8</span>
+                        <span class="font-data-sm text-data-sm text-on-surface-variant pb-base">%</span>
+                    </div>
+                    <div class="flex gap-xs">
+                        <div class="h-1 flex-1 bg-secondary-container"></div>
+                        <div class="h-1 flex-1 bg-secondary-container"></div>
+                        <div class="h-1 flex-1 bg-secondary-container"></div>
+                        <div class="h-1 flex-1 bg-secondary-container/20"></div>
+                    </div>
+                </div>
+                <!-- Card 4: I/O Stream -->
+                <div class="bg-surface-container border border-outline-variant/20 p-md relative overflow-hidden group card-3d-hover" id="card-4">
+                    <div class="scanning-line"></div>
+                    <div class="absolute top-0 left-0 w-full h-[2px] bg-secondary-container" id="card-4-border"></div>
+                    <div class="flex justify-between items-start mb-lg">
+                        <span class="font-label-caps text-label-caps text-on-surface-variant">I/O 串流</span>
+                        <span class="material-symbols-outlined text-on-surface-variant text-sm">more_vert</span>
+                    </div>
+                    <div class="flex items-end gap-sm mb-md">
+                        <span class="font-data-lg text-display-lg text-on-background leading-none" id="val-4">12.4</span>
+                        <span class="font-data-sm text-data-sm text-on-surface-variant pb-base">GB/S</span>
+                    </div>
+                    <div class="font-data-sm text-data-sm text-secondary-container/80 truncate">
+                        STREAM_SECURE_HASH: 0x82...F4
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bento Layout Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter pb-lg shrink-0">
+                <!-- Event Logs Bento -->
+                <div class="lg:col-span-2 bg-surface-container border border-outline-variant rounded overflow-hidden">
+                    <div class="p-md border-b border-outline-variant bg-surface-container flex justify-between items-center">
+                        <span class="font-label-caps text-label-caps text-on-background">即時日誌摘要</span>
+                        <a href="#event-log" class="text-primary font-label-caps text-label-caps hover:underline">查看完整日誌</a>
+                    </div>
+                    <div class="p-md space-y-sm max-h-64 overflow-y-auto font-data-sm text-data-sm" id="log-container">
+                        <div class="flex gap-md border-b border-outline-variant/10 pb-sm">
+                            <span class="text-on-surface-variant">[08:42:01]</span>
+                            <span class="text-secondary-fixed">INF</span>
+                            <span class="text-on-surface">開機程序完成。線束就緒。</span>
+                        </div>
+                        <div class="flex gap-md border-b border-outline-variant/10 pb-sm">
+                            <span class="text-on-surface-variant">[08:45:12]</span>
+                            <span class="text-secondary-fixed">INF</span>
+                            <span class="text-on-surface">散熱器運作中。ΔT: 1.2K。</span>
+                        </div>
+                        <div class="flex gap-md border-b border-outline-variant/10 pb-sm">
+                            <span class="text-on-surface-variant">[08:50:44]</span>
+                            <span class="text-primary">NET</span>
+                            <span class="text-on-surface">與節點 Alpha 的加密連線成功。</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Mini Topology Diagram -->
+                <div class="bg-surface-container border border-outline-variant rounded relative p-md flex flex-col justify-center items-center text-center">
+                    <div class="absolute top-md left-md">
+                        <span class="font-label-caps text-label-caps text-on-surface-variant">網絡拓撲概要</span>
+                    </div>
+                    <div class="w-full h-48 bg-surface-container-lowest border border-outline-variant/10 rounded mb-md overflow-hidden flex items-center justify-center">
+                        <div class="relative w-32 h-32">
+                            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-4 bg-primary-container rounded-full glow-blue"></div>
+                            <div class="absolute bottom-0 left-0 w-4 h-4 bg-primary-container rounded-full glow-blue"></div>
+                            <div class="absolute bottom-0 right-0 w-4 h-4 bg-primary-container rounded-full glow-blue"></div>
+                            <svg class="w-full h-full stroke-primary/30 fill-none">
+                                <path d="M64,8 L16,112 M64,8 L112,112 M16,112 L112,112" stroke-width="1"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="font-data-sm text-data-sm text-on-surface-variant">網狀網絡運行時間：142h 12m 04s</p>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- TEMPLATE 2: Remote Telemetry (遠端遙測) -->
+    <template id="tpl-telemetry">
+        <div class="p-margin-desktop flex flex-col gap-gutter w-full flex-1 overflow-y-auto">
+            <!-- Grid Layout (Charts + Controls) -->
+            <div class="grid grid-cols-12 gap-gutter flex-1 min-h-[400px]">
+                
+                <!-- SVG Chart Container (Col Span 8) -->
+                <div class="col-span-12 lg:col-span-8 bg-surface-container border border-outline-variant rounded flex flex-col relative h-[450px]">
+                    <div class="scan-line-horizontal"></div>
+                    <div class="p-sm border-b border-outline-variant bg-surface-container-low font-label-caps text-label-caps flex justify-between items-center">
+                        <span>即時趨勢分析</span>
+                        <div class="flex items-center gap-sm">
+                            <span class="flex items-center gap-1 font-data-sm"><span class="w-2.5 h-2.5 rounded-full bg-primary-container"></span>壓力</span>
+                            <span class="flex items-center gap-1 font-data-sm"><span class="w-2.5 h-2.5 rounded-full bg-secondary-fixed-dim"></span>溫度</span>
+                            <span class="flex items-center gap-1 font-data-sm"><span class="w-2.5 h-2.5 rounded-full bg-tertiary-fixed-dim"></span>流量</span>
+                        </div>
+                    </div>
+                    <div class="flex-1 bg-black bg-chart-grid relative overflow-hidden p-sm">
+                        <!-- Responsive SVG Trend Lines -->
+                        <svg class="w-full h-full" viewBox="0 0 1000 400" preserveAspectRatio="none">
+                            <defs>
+                                <filter id="glow-cyan"><feGaussianBlur stdDeviation="3" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                                <filter id="glow-green"><feGaussianBlur stdDeviation="3" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                                <filter id="glow-amber"><feGaussianBlur stdDeviation="3" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                                <linearGradient id="grad-cyan" x1="0%" x2="0%" y1="0%" y2="100%"><stop offset="0%" stop-color="#00daf3" stop-opacity="0.25"/><stop offset="100%" stop-color="#00daf3" stop-opacity="0"/></linearGradient>
+                                <linearGradient id="grad-green" x1="0%" x2="0%" y1="0%" y2="100%"><stop offset="0%" stop-color="#00e639" stop-opacity="0.15"/><stop offset="100%" stop-color="#00e639" stop-opacity="0"/></linearGradient>
+                            </defs>
+                            <!-- Grid Lines -->
+                            <line opacity="0.4" stroke="#3b494c" stroke-dasharray="2 4" stroke-width="1" x1="0" x2="1000" y1="100" y2="100"/>
+                            <line opacity="0.4" stroke="#3b494c" stroke-dasharray="2 4" stroke-width="1" x1="0" x2="1000" y1="200" y2="200"/>
+                            <line opacity="0.4" stroke="#3b494c" stroke-dasharray="2 4" stroke-width="1" x1="0" x2="1000" y1="300" y2="300"/>
+                            <!-- Curves and fills -->
+                            <path d="M0,250 Q100,240 200,180 T400,200 T600,150 T800,220 T1000,190 L1000,400 L0,400 Z" fill="url(#grad-cyan)"/>
+                            <path d="M0,350 Q150,330 250,340 T500,280 T700,320 T900,300 T1000,310 L1000,400 L0,400 Z" fill="url(#grad-green)"/>
+                            <path d="M0,150 Q120,160 220,140 T450,180 T650,120 T850,160 T1000,130" fill="none" filter="url(#glow-amber)" stroke="#ffb950" stroke-dasharray="4 4" stroke-width="2"/>
+                            <path d="M0,350 Q150,330 250,340 T500,280 T700,320 T900,300 T1000,310" fill="none" filter="url(#glow-green)" stroke="#00e639" stroke-width="2.5"/>
+                            <path d="M0,250 Q100,240 200,180 T400,200 T600,150 T800,220 T1000,190" fill="none" filter="url(#glow-cyan)" stroke="#00daf3" stroke-width="3"/>
+                            <!-- Cursor -->
+                            <line opacity="0.7" stroke="#00daf3" stroke-dasharray="4 2" stroke-width="1" x1="750" x2="750" y1="0" y2="400"/>
+                            <circle cx="750" cy="185" fill="#111316" filter="url(#glow-cyan)" r="5" stroke="#00daf3" stroke-width="2"/>
+                            <circle cx="750" cy="315" fill="#111316" filter="url(#glow-green)" r="4" stroke="#00e639" stroke-width="2"/>
+                            <circle cx="750" cy="140" fill="#111316" filter="url(#glow-amber)" r="4" stroke="#ffb950" stroke-width="2"/>
+                        </svg>
+                        
+                        <!-- Overlay Labels -->
+                        <div class="absolute top-sm left-sm font-data-sm text-data-sm text-outline opacity-60">
+                            <div>Y-Max: 500</div>
+                            <div>Y-Min: 0</div>
+                        </div>
+                        <div class="absolute top-sm right-sm font-data-sm text-data-sm text-outline opacity-60 text-right">
+                            <div>Sync: STABLE</div>
+                            <div>Latency: 12ms</div>
+                        </div>
+                        <div class="absolute bottom-0 left-0 right-0 flex justify-between px-sm pb-[2px] font-data-sm text-data-sm text-outline bg-black/50 backdrop-blur-sm pt-xs">
+                            <span>14:00:00</span>
+                            <span>14:05:00</span>
+                            <span>14:10:00</span>
+                            <span>14:15:00</span>
+                            <span>14:20:00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar Area (Col Span 4) -->
+                <div class="col-span-12 lg:col-span-4 flex flex-col gap-gutter h-[450px]">
+                    <!-- Sensor Selection List -->
+                    <div class="bg-surface-container border border-outline-variant rounded flex flex-col h-1/2 card-3d-hover">
+                        <div class="p-sm border-b border-outline-variant bg-surface-container-low font-label-caps text-label-caps flex justify-between items-center">
+                            <span>數據流</span>
+                            <span class="material-symbols-outlined text-[16px] text-outline">filter_list</span>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-xs">
+                            <div class="p-sm mb-[2px] bg-surface-container-highest border-l-2 border-primary-container flex justify-between items-center cursor-pointer hover:bg-surface-bright transition-colors">
+                                <div class="flex items-center gap-sm">
+                                    <input checked="" class="bg-black border-outline text-primary-container focus:ring-primary-container rounded-sm w-3 h-3" type="checkbox"/>
+                                    <span class="font-data-sm text-data-sm text-primary-container">PRS-01 主閥門</span>
+                                </div>
+                                <span class="font-data-sm text-data-sm">124.5 PSI</span>
+                            </div>
+                            <div class="p-sm mb-[2px] bg-transparent border-l-2 border-transparent flex justify-between items-center cursor-pointer hover:bg-surface-container-highest transition-colors">
+                                <div class="flex items-center gap-sm">
+                                    <input class="bg-black border-outline text-primary-container focus:ring-primary-container rounded-sm w-3 h-3" type="checkbox"/>
+                                    <span class="font-data-sm text-data-sm text-on-surface-variant">PRS-02 輔助閥門</span>
+                                </div>
+                                <span class="font-data-sm text-data-sm text-outline">118.2 PSI</span>
+                            </div>
+                            <div class="p-sm mb-[2px] bg-surface-container-highest border-l-2 border-secondary-fixed-dim flex justify-between items-center cursor-pointer hover:bg-surface-bright transition-colors">
+                                <div class="flex items-center gap-sm">
+                                    <input checked="" class="bg-black border-outline text-secondary-fixed-dim focus:ring-secondary-fixed-dim rounded-sm w-3 h-3" type="checkbox"/>
+                                    <span class="font-data-sm text-data-sm text-secondary-fixed-dim">TMP-核心反應爐</span>
+                                </div>
+                                <span class="font-data-sm text-data-sm">450.0 °C</span>
+                            </div>
+                            <div class="p-sm mb-[2px] bg-surface-container-highest border-l-2 border-tertiary-fixed-dim flex justify-between items-center cursor-pointer hover:bg-surface-bright transition-colors">
+                                <div class="flex items-center gap-sm">
+                                    <input checked="" class="bg-black border-outline text-tertiary-fixed-dim focus:ring-tertiary-fixed-dim rounded-sm w-3 h-3" type="checkbox"/>
+                                    <span class="font-data-sm text-data-sm text-tertiary-fixed-dim">FLW-主冷卻劑</span>
+                                </div>
+                                <span class="font-data-sm text-data-sm">88.3 L/s</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Summary Statistics Table -->
+                    <div class="bg-surface-container border border-outline-variant rounded flex flex-col flex-1 overflow-hidden card-3d-hover">
+                        <div class="p-sm border-b border-outline-variant bg-surface-container-low font-label-caps text-label-caps">
+                            聚合指標
+                        </div>
+                        <div class="flex-1 overflow-y-auto">
+                            <table class="w-full text-left font-data-sm text-data-sm border-collapse">
+                                <thead class="bg-surface-container-high sticky top-0 text-outline border-b border-outline-variant">
+                                    <tr>
+                                        <th class="p-sm font-normal">指標</th>
+                                        <th class="p-sm font-normal text-right">最小值</th>
+                                        <th class="p-sm font-normal text-right">最大值</th>
+                                        <th class="p-sm font-normal text-right">平均值</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b border-outline-variant/30 hover:bg-surface-container-highest">
+                                        <td class="p-sm text-primary-container">PRS-01</td>
+                                        <td class="p-sm text-right text-on-surface-variant">110.2</td>
+                                        <td class="p-sm text-right text-on-surface-variant">130.5</td>
+                                        <td class="p-sm text-right font-bold">124.0</td>
+                                    </tr>
+                                    <tr class="border-b border-outline-variant/30 hover:bg-surface-container-highest">
+                                        <td class="p-sm text-secondary-fixed-dim">TMP-核心</td>
+                                        <td class="p-sm text-right text-on-surface-variant">420.0</td>
+                                        <td class="p-sm text-right text-on-surface-variant">465.5</td>
+                                        <td class="p-sm text-right font-bold">448.2</td>
+                                    </tr>
+                                    <tr class="border-b border-outline-variant/30 hover:bg-surface-container-highest">
+                                        <td class="p-sm text-tertiary-fixed-dim">FLW-主</td>
+                                        <td class="p-sm text-right text-on-surface-variant">75.0</td>
+                                        <td class="p-sm text-right text-on-surface-variant">92.1</td>
+                                        <td class="p-sm text-right font-bold">85.6</td>
+                                    </tr>
+                                    <tr class="border-b border-outline-variant/30 hover:bg-surface-container-highest">
+                                        <td class="p-sm text-error">VLV-壓力</td>
+                                        <td class="p-sm text-right text-on-surface-variant">60.1</td>
+                                        <td class="p-sm text-right text-error font-bold">89.2</td>
+                                        <td class="p-sm text-right font-bold text-error">82.1</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Secondary Charts Strip -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter h-[200px] shrink-0">
+                <div class="bg-surface-container border border-outline-variant rounded flex flex-col relative card-3d-hover">
+                    <div class="absolute top-0 left-0 right-0 h-[2px] bg-secondary-fixed-dim"></div>
+                    <div class="p-xs border-b border-outline-variant px-sm font-label-caps text-label-caps flex justify-between">
+                        <span>溫度梯度</span>
+                        <span class="text-secondary-fixed-dim font-data-sm">正常</span>
+                    </div>
+                    <div class="flex-1 bg-black bg-chart-grid p-xs flex items-end overflow-hidden">
+                        <div class="flex w-full h-full items-end justify-between gap-[2px] opacity-80">
+                            <div class="w-full bg-outline-variant h-[20%]"></div>
+                            <div class="w-full bg-outline-variant h-[25%]"></div>
+                            <div class="w-full bg-secondary-fixed-dim h-[30%]"></div>
+                            <div class="w-full bg-outline-variant h-[40%]"></div>
+                            <div class="w-full bg-outline-variant h-[45%]"></div>
+                            <div class="w-full bg-secondary-fixed-dim h-[55%]"></div>
+                            <div class="w-full bg-outline-variant h-[60%]"></div>
+                            <div class="w-full bg-outline-variant h-[50%]"></div>
+                            <div class="w-full bg-outline-variant h-[40%]"></div>
+                            <div class="w-full bg-secondary-fixed-dim h-[45%]"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-surface-container border border-outline-variant rounded flex flex-col relative card-3d-hover">
+                    <div class="absolute top-0 left-0 right-0 h-[2px] bg-error"></div>
+                    <div class="p-xs border-b border-outline-variant px-sm font-label-caps text-label-caps flex justify-between">
+                        <span>閥門壓力指數</span>
+                        <span class="text-error font-data-sm animate-pulse">[!] 警告</span>
+                    </div>
+                    <div class="flex-1 bg-black p-xs flex items-center justify-center">
+                        <div class="text-center">
+                            <div class="font-data-lg text-display-lg text-error" style="line-height: 1;" id="gauge-valve-pressure">87.4<span class="text-body-md text-outline">%</span></div>
+                            <div class="font-data-sm text-data-sm text-on-surface-variant mt-xs">臨界閾值: 85.0%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- TEMPLATE 3: System Health (系統健康) -->
+    <template id="tpl-system-health">
+        <div class="p-margin-desktop flex flex-col gap-gutter w-full flex-1 overflow-y-auto relative">
+            <div class="max-w-7xl mx-auto space-y-8 relative z-10 w-full">
+                <!-- Node Heatmap Grid -->
+                <div class="bg-surface-container border border-outline-variant rounded-lg p-6">
+                    <div class="flex justify-between items-center mb-6 border-b border-outline-variant pb-2">
+                        <h3 class="font-label-caps text-label-caps text-primary-container uppercase tracking-widest">硬體節點狀態圖</h3>
+                        <span class="font-data-sm text-data-sm text-on-surface-variant font-mono">SEC-A-01 -> SEC-H-04</span>
+                    </div>
+                    
+                    <!-- Hardware grid container -->
+                    <div class="grid grid-cols-4 sm:grid-cols-8 gap-2 md:gap-3" id="hardware-grid">
+                        <!-- Dynamic Node Divs will be populated by app.js -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- TEMPLATE 4: Event Log (事件日誌) -->
+    <template id="tpl-event-log">
+        <div class="p-margin-desktop flex flex-col gap-gutter w-full flex-1 overflow-hidden">
+            <!-- Filter Panel -->
+            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-md shrink-0">
+                <div>
+                    <h2 class="font-display-lg text-[32px] md:text-display-lg font-bold text-on-surface tracking-tighter leading-tight mb-xs">系統事件日誌</h2>
+                    <p class="font-data-sm text-data-sm text-on-surface-variant flex items-center gap-xs">
+                        <span class="inline-block w-2 h-2 rounded-full bg-secondary-fixed-dim glow-active"></span>
+                        即時串流中。今日已記錄 <span id="total-logs-count">4,209</span> 筆事件。
+                    </p>
+                </div>
+                <!-- Filters -->
+                <div class="flex flex-wrap items-center gap-sm p-sm bg-surface-container border border-outline-variant rounded-DEFAULT">
+                    <div class="flex items-center gap-xs border-r border-outline-variant pr-sm">
+                        <span class="material-symbols-outlined text-on-surface-variant text-[16px]">filter_list</span>
+                        <span class="font-label-caps text-label-caps text-on-surface-variant">層級</span>
+                    </div>
+                    <label class="flex items-center gap-xs cursor-pointer group">
+                        <input checked="" id="filter-err" class="form-checkbox bg-surface-dim border-outline-variant text-primary-container rounded-xs focus:ring-primary-container focus:ring-offset-background" type="checkbox"/>
+                        <span class="font-data-sm text-data-sm text-on-surface group-hover:text-primary-container transition-colors">錯誤 (ERR)</span>
+                    </label>
+                    <label class="flex items-center gap-xs cursor-pointer group">
+                        <input checked="" id="filter-wrn" class="form-checkbox bg-surface-dim border-outline-variant text-tertiary-fixed-dim rounded-xs focus:ring-tertiary-fixed-dim focus:ring-offset-background" type="checkbox"/>
+                        <span class="font-data-sm text-data-sm text-on-surface group-hover:text-tertiary-fixed-dim transition-colors">警告 (WRN)</span>
+                    </label>
+                    <label class="flex items-center gap-xs cursor-pointer group">
+                        <input checked="" id="filter-inf" class="form-checkbox bg-surface-dim border-outline-variant text-on-surface-variant rounded-xs focus:ring-on-surface-variant focus:ring-offset-background" type="checkbox"/>
+                        <span class="font-data-sm text-data-sm text-on-surface group-hover:text-on-surface-variant transition-colors">資訊 (INF)</span>
+                    </label>
+                    <div class="w-px h-4 bg-outline-variant mx-xs"></div>
+                    <div class="flex items-center gap-xs border-outline-variant pl-xs">
+                        <span class="material-symbols-outlined text-on-surface-variant text-[16px]">schedule</span>
+                        <select class="bg-surface-dim border border-outline-variant text-data-sm font-data-sm text-on-surface rounded-DEFAULT focus:border-primary focus:ring-0 py-xs pl-sm pr-lg h-7 leading-none">
+                            <option>過去 1 小時</option>
+                            <option>過去 24 小時</option>
+                            <option>過去 7 天</option>
+                            <option>自訂範圍</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terminal Log Table Container -->
+            <div class="flex-1 bg-surface-container border border-outline-variant rounded-lg overflow-hidden flex flex-col shadow-lg relative group min-h-[300px]">
+                <!-- Terminal Header Bar -->
+                <div class="h-8 bg-surface-container-high border-b border-outline-variant flex items-center px-sm gap-sm shrink-0">
+                    <div class="flex gap-xs">
+                        <div class="w-2.5 h-2.5 rounded-full bg-error border border-error-container"></div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-tertiary-fixed-dim border border-on-tertiary-container"></div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-secondary-fixed-dim border border-on-secondary-container"></div>
+                    </div>
+                    <span class="font-data-sm text-[10px] text-on-surface-variant opacity-70 ml-2 font-mono">bash: tail -f /var/log/aegis/syslog</span>
+                    <button class="ml-auto text-on-surface-variant hover:text-primary-container transition-colors">
+                        <span class="material-symbols-outlined text-[16px]">download</span>
+                    </button>
+                </div>
+                <!-- Table Header -->
+                <div class="grid grid-cols-[140px_80px_120px_1fr_100px] gap-sm px-md py-sm border-b border-outline-variant bg-surface-container-low font-label-caps text-label-caps text-on-surface-variant shrink-0">
+                    <div>時間戳記</div>
+                    <div>層級</div>
+                    <div>來源</div>
+                    <div>訊息</div>
+                    <div class="text-right">操作</div>
+                </div>
+                <!-- Table Body (Scrollable) -->
+                <div id="terminal-logs-body" class="flex-1 overflow-y-auto font-data-sm text-data-sm bg-surface-dim p-sm space-y-1">
+                    <!-- Logs will be populated here -->
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- TEMPLATE 5: Network Topology (網絡拓撲) -->
+    <template id="tpl-network-topology">
+        <div class="flex flex-1 overflow-hidden w-full relative">
+            <!-- Left Info Panel -->
+            <aside class="w-80 border-r border-outline-variant bg-surface-container-low flex flex-col shrink-0 z-20 h-full">
+                <div class="p-md border-b border-outline-variant">
+                    <h2 class="font-label-caps text-label-caps text-on-surface-variant mb-xs">活動工作階段</h2>
+                    <div class="flex items-center justify-between">
+                        <span class="font-headline-md text-headline-md text-primary-fixed">Topology Alpha-01</span>
+                        <span class="flex items-center gap-xs font-data-sm text-data-sm text-secondary-container">
+                            <span class="w-2 h-2 rounded-full bg-secondary-container shadow-[0_0_4px_theme('colors.secondary-container')]"></span>
+                            即時
+                        </span>
+                    </div>
+                </div>
+                <div class="p-md flex-1 overflow-y-auto space-y-md">
+                    <!-- Stat Card: Packet Loss -->
+                    <div class="border border-outline-variant rounded bg-surface-container p-md relative overflow-hidden group">
+                        <div class="scanning-line hidden group-hover:block"></div>
+                        <div class="flex items-center justify-between mb-sm">
+                            <span class="font-label-caps text-label-caps text-on-surface-variant flex items-center gap-xs">
+                                <span class="material-symbols-outlined text-[14px]">call_missed_outgoing</span>
+                                丟包率
+                            </span>
+                            <span class="font-data-sm text-data-sm text-error">危險趨勢</span>
+                        </div>
+                        <div class="flex items-baseline gap-xs">
+                            <span class="font-data-lg text-[32px] text-error" id="packet-loss-counter">4.2</span>
+                            <span class="font-data-sm text-data-sm text-on-surface-variant">%</span>
+                        </div>
+                    </div>
+                    <!-- Stat Card: Throughput -->
+                    <div class="border border-outline-variant rounded bg-surface-container p-md relative">
+                        <div class="flex items-center justify-between mb-sm">
+                            <span class="font-label-caps text-label-caps text-on-surface-variant flex items-center gap-xs">
+                                <span class="material-symbols-outlined text-[14px]">swap_vert</span>
+                                核心吞吐量
+                            </span>
+                        </div>
+                        <div class="flex items-baseline gap-xs">
+                            <span class="font-data-lg text-[24px] text-primary-container" id="throughput-counter">128.4</span>
+                            <span class="font-data-sm text-data-sm text-on-surface-variant">Gbps</span>
+                        </div>
+                        <!-- Mini sparkline mockup -->
+                        <div class="mt-sm h-8 w-full flex items-end gap-1 opacity-70">
+                            <div class="w-full bg-surface-variant h-[20%]"></div>
+                            <div class="w-full bg-surface-variant h-[40%]"></div>
+                            <div class="w-full bg-primary-container h-[80%]"></div>
+                            <div class="w-full bg-primary-container h-[60%]"></div>
+                            <div class="w-full bg-surface-variant h-[30%]"></div>
+                            <div class="w-full bg-surface-variant h-[50%]"></div>
+                            <div class="w-full bg-primary-container h-[90%] shadow-[0_0_4px_theme('colors.primary-container')]"></div>
+                            <div class="w-full bg-primary-container h-[100%] shadow-[0_0_4px_theme('colors.primary-container')]"></div>
+                        </div>
+                    </div>
+                    <!-- Node Status List -->
+                    <div class="border border-outline-variant rounded bg-surface-container flex flex-col">
+                        <div class="p-sm border-b border-outline-variant bg-surface-container-high">
+                            <span class="font-label-caps text-label-caps text-on-surface">節點診斷</span>
+                        </div>
+                        <div class="p-sm space-y-sm max-h-48 overflow-y-auto">
+                            <div class="flex justify-between items-center py-xs border-b border-outline-variant/30">
+                                <span class="font-data-sm text-data-sm text-on-surface">N-Sector-A</span>
+                                <span class="font-data-sm text-data-sm text-secondary-container">正常</span>
+                            </div>
+                            <div class="flex justify-between items-center py-xs border-b border-outline-variant/30">
+                                <span class="font-data-sm text-data-sm text-on-surface">N-Sector-B</span>
+                                <span class="font-data-sm text-data-sm text-secondary-container">正常</span>
+                            </div>
+                            <div class="flex justify-between items-center py-xs border-b border-outline-variant/30 bg-error/10 px-xs -mx-xs rounded">
+                                <span class="font-data-sm text-data-sm text-error font-bold flex items-center gap-xs">
+                                    <span class="material-symbols-outlined text-[12px]">warning</span>
+                                    C-Hub-Delta
+                                </span>
+                                <span class="font-data-sm text-data-sm text-error">延遲過高</span>
+                            </div>
+                            <div class="flex justify-between items-center py-xs border-b border-outline-variant/30">
+                                <span class="font-data-sm text-data-sm text-on-surface">P-Sensor-01</span>
+                                <span class="font-data-sm text-data-sm text-tertiary-container">降級</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Topology Diagram Area -->
+            <div class="flex-1 relative bg-surface-dim overflow-hidden h-full" id="topology-container">
+                <!-- Background Grid -->
+                <div class="absolute inset-0" style="background-image: radial-gradient(#3b494c 1px, transparent 1px); background-size: 24px 24px; opacity: 0.15;"></div>
+                <!-- SVG Canvas for Nodes/Links -->
+                <svg class="absolute inset-0 w-full h-full" id="topology-svg"></svg>
+                
+                <!-- Floating Toolbar -->
+                <div class="absolute top-md right-md flex gap-sm bg-surface-container-high border border-outline-variant rounded p-xs shadow-lg z-20">
+                    <button class="p-sm text-on-surface-variant hover:text-primary-container hover:bg-surface-variant rounded transition-colors" title="Zoom In">
+                        <span class="material-symbols-outlined text-[20px]">add</span>
+                    </button>
+                    <button class="p-sm text-on-surface-variant hover:text-primary-container hover:bg-surface-variant rounded transition-colors" title="Zoom Out">
+                        <span class="material-symbols-outlined text-[20px]">remove</span>
+                    </button>
+                    <div class="w-px bg-outline-variant mx-xs"></div>
+                    <button class="p-sm text-primary-container bg-surface-variant rounded transition-colors shadow-[0_0_4px_theme('colors.primary-container')]" title="Auto Layout">
+                        <span class="material-symbols-outlined text-[20px]">account_tree</span>
+                    </button>
+                    <button class="p-sm text-on-surface-variant hover:text-primary-container hover:bg-surface-variant rounded transition-colors" title="Filter Nodes">
+                        <span class="material-symbols-outlined text-[20px]">filter_list</span>
+                    </button>
+                </div>
+                <!-- Mini Map -->
+                <div class="absolute bottom-md right-md w-48 h-32 bg-surface-container-lowest border border-outline-variant rounded overflow-hidden opacity-80 hover:opacity-100 transition-opacity z-20 hidden md:block">
+                    <div class="w-full h-full opacity-40 bg-chart-grid"></div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- ========================================== -->
+    <!--            SHARED MODAL OVERLAYS           -->
+    <!-- ========================================== -->
+
+    <!-- Modal: Reactor Alert Manual Override -->
+    <div class="fixed inset-0 bg-background/80 backdrop-blur-md z-[100] flex items-center justify-center hidden" id="alert-modal">
+        <div class="bg-surface-container-high border-2 border-tertiary-container p-xl rounded-xl max-w-lg w-full glow-amber pulse-alert">
+            <div class="flex items-center gap-lg mb-lg">
+                <span class="material-symbols-outlined text-tertiary-container text-5xl" style="font-variation-settings: 'FILL' 1;">security</span>
+                <h2 class="font-display-lg text-headline-md text-tertiary-container">需要人工確認</h2>
+            </div>
+            <p class="font-body-md text-body-md text-on-background mb-xl">
+                區域 7-G 偵測到高風險操作。Aegis 系統在繼續請求的反應爐序列之前需要手動驗證。
+            </p>
+            <div class="grid grid-cols-2 gap-md">
+                <button class="bg-tertiary-container text-on-tertiary-container py-md font-label-caps text-label-caps rounded-lg hover:brightness-110 active:scale-95 transition-all" id="btn-auth-op">授權操作</button>
+                <button class="border border-outline text-on-surface py-md font-label-caps text-label-caps rounded-lg hover:bg-surface-variant active:scale-95 transition-all" id="btn-override-op">手動覆蓋</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast: AI Intercept Alert Overlay -->
+    <div class="fixed top-20 right-8 transform translate-x-full transition-transform duration-500 ease-in-out z-50" id="ai-toast">
+        <div class="bg-error-container border-2 border-error p-lg rounded-lg shadow-2xl flex items-center gap-lg max-w-md glow-red">
+            <span class="material-symbols-outlined text-on-error text-4xl animate-pulse">warning</span>
+            <div>
+                <h3 class="font-headline-md text-headline-md text-on-error-container">嚴重幻覺錯誤</h3>
+                <p class="font-body-md text-body-md text-on-error-container">神經連結偵測到異常。抑制已啟動。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast: Success Recovery Overlay -->
+    <div class="fixed top-20 right-8 transform translate-x-full transition-transform duration-500 ease-in-out z-50" id="success-toast">
+        <div class="bg-secondary-container border-2 border-on-secondary-container p-lg rounded-lg shadow-2xl flex items-center gap-lg max-w-md glow-blue">
+            <span class="material-symbols-outlined text-on-secondary-container text-4xl">verified_user</span>
+            <div>
+                <h3 class="font-headline-md text-headline-md text-on-secondary-container">威脅已消除</h3>
+                <p class="font-body-md text-body-md text-on-secondary-container">已由 Aegis 系統攔截並修正。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Emergency Stop Panel -->
+    <div class="fixed inset-0 bg-red-950/90 backdrop-blur-lg z-[150] flex flex-col items-center justify-center hidden" id="emergency-modal">
+        <div class="max-w-2xl text-center px-lg animate-bounce">
+            <span class="material-symbols-outlined text-error text-9xl animate-pulse">emergency_share</span>
+            <h1 class="font-display-lg text-5xl font-bold text-error tracking-tight mt-6">EMERGENCY STOP ACTIVATED</h1>
+            <h2 class="font-headline-md text-2xl text-on-surface-variant mt-2 uppercase tracking-widest">Aegis 核心反應爐序列已關閉</h2>
+            <p class="font-body-md text-lg text-on-surface-variant mt-4">
+                所有系統控制線路已完全阻斷，冷卻閥門開啟。主控端已進入安全封鎖狀態。
+            </p>
+            <button id="btn-emergency-reset" class="mt-8 border-2 border-primary-container text-primary-container px-lg py-md font-label-caps text-label-caps rounded-xl hover:bg-primary-container hover:text-on-primary-container transition-all active:scale-95 glow-blue">
+                重設系統基準模式
+            </button>
+        </div>
+    </div>
+
+    <!-- Core App Logic -->
+    <script src="app.js"></script>
+</body>
+</html>

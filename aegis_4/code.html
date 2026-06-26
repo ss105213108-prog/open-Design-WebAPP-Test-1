@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="zh-TW"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aegis Industrial - 事件日誌</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface": "#e2e2e6",
+                      "on-tertiary": "#452b00",
+                      "error": "#ffb4ab",
+                      "on-primary-container": "#00626e",
+                      "on-error": "#690005",
+                      "tertiary-fixed-dim": "#ffb950",
+                      "on-secondary-fixed": "#002203",
+                      "on-secondary-container": "#007117",
+                      "surface-dim": "#111316",
+                      "on-tertiary-fixed-variant": "#624000",
+                      "outline": "#849396",
+                      "on-secondary": "#003907",
+                      "secondary-fixed": "#72ff70",
+                      "secondary-fixed-dim": "#00e639",
+                      "primary-fixed": "#9cf0ff",
+                      "on-tertiary-container": "#7b5000",
+                      "on-secondary-fixed-variant": "#00530e",
+                      "inverse-primary": "#006875",
+                      "on-primary": "#00363d",
+                      "tertiary-fixed": "#ffddb3",
+                      "secondary": "#ecffe3",
+                      "secondary-container": "#13ff43",
+                      "on-background": "#e2e2e6",
+                      "error-container": "#93000a",
+                      "on-surface-variant": "#bac9cc",
+                      "primary": "#c3f5ff",
+                      "surface": "#111316",
+                      "surface-variant": "#333538",
+                      "on-primary-fixed-variant": "#004f58",
+                      "surface-tint": "#00daf3",
+                      "primary-fixed-dim": "#00daf3",
+                      "inverse-surface": "#e2e2e6",
+                      "surface-container": "#1e2023",
+                      "on-primary-fixed": "#001f24",
+                      "primary-container": "#00e5ff",
+                      "tertiary": "#ffead2",
+                      "tertiary-container": "#ffc779",
+                      "surface-container-high": "#282a2d",
+                      "surface-container-highest": "#333538",
+                      "on-error-container": "#ffdad6",
+                      "inverse-on-surface": "#2f3034",
+                      "background": "#111316",
+                      "surface-bright": "#37393d",
+                      "outline-variant": "#3b494c",
+                      "surface-container-low": "#1a1c1f",
+                      "on-tertiary-fixed": "#291800",
+                      "surface-container-lowest": "#0c0e11"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "xl": "32px",
+                      "md": "16px",
+                      "sm": "8px",
+                      "margin-desktop": "32px",
+                      "lg": "24px",
+                      "base": "4px",
+                      "gutter": "16px",
+                      "margin-mobile": "16px"
+              },
+              "fontFamily": {
+                      "label-caps": [
+                              "JetBrains Mono"
+                      ],
+                      "display-lg": [
+                              "Hanken Grotesk"
+                      ],
+                      "headline-md": [
+                              "Hanken Grotesk"
+                      ],
+                      "body-md": [
+                              "Hanken Grotesk"
+                      ],
+                      "data-sm": [
+                              "JetBrains Mono"
+                      ],
+                      "data-lg": [
+                              "JetBrains Mono"
+                      ]
+              },
+              "fontSize": {
+                      "label-caps": [
+                              "11px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.1em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "data-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "data-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+            },
+          },
+        }
+      </script>
+<style>
+        .glow-active {
+            box-shadow: 0 0 8px rgba(0, 229, 255, 0.3);
+        }
+        .glow-error {
+            box-shadow: 0 0 8px rgba(255, 180, 171, 0.3);
+        }
+        .glow-warning {
+            box-shadow: 0 0 8px rgba(255, 185, 80, 0.3);
+        }
+        /* Custom Scrollbar for terminal feel */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111316;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3b494c;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00e5ff;
+        }
+        .scanline {
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0), rgba(0, 229, 255, 0.2), rgba(255,255,255,0), rgba(255,255,255,0));
+            background-size: 100% 8px;
+            animation: scan 10s linear infinite;
+        }
+        @keyframes scan {
+            0% { background-position: 0 -100vh; }
+            100% { background-position: 0 100vh; }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex font-body-md relative overflow-hidden">
+<!-- Decorative Scanline Overlay -->
+<div class="pointer-events-none absolute inset-0 z-50 scanline opacity-30 mix-blend-screen"></div>
+<!-- SideNavBar (Desktop Only) -->
+<nav class="hidden md:flex flex-col h-screen left-0 w-64 py-xl px-md bg-surface-container-low border-r border-outline-variant z-40 shrink-0">
+<div class="mb-xl flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center glow-active shrink-0">
+<span class="material-symbols-outlined text-on-primary-container text-[18px]">emergency</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md text-primary-container truncate">Aegis MVP</h1>
+<p class="font-data-sm text-data-sm text-on-surface-variant truncate">任務控制</p>
+</div>
+</div>
+<ul class="flex flex-col gap-sm flex-1 font-label-caps text-label-caps">
+<li>
+<a class="flex items-center gap-md p-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all rounded-DEFAULT active:translate-x-1" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                    儀表板
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md p-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all rounded-DEFAULT active:translate-x-1" href="#">
+<span class="material-symbols-outlined">analytics</span>
+                    遙測資料
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md p-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all rounded-DEFAULT active:translate-x-1" href="#">
+<span class="material-symbols-outlined">monitor_heart</span>
+                    系統健康狀態
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md p-md bg-primary-container text-on-primary-container font-bold rounded-lg mb-2 shadow-[0_0_8px_rgba(0,229,255,0.3)] active:translate-x-1 transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">list_alt</span>
+                    事件日誌
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md p-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all rounded-DEFAULT active:translate-x-1" href="#">
+<span class="material-symbols-outlined">hub</span>
+                    網路
+                </a>
+</li>
+</ul>
+<button class="mt-auto w-full py-md border border-error text-error hover:bg-error-container hover:text-on-error-container font-label-caps text-label-caps rounded-DEFAULT transition-all glow-error active:scale-95 flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-[16px]">warning</span>
+            緊急停止
+        </button>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+<!-- TopAppBar (Mobile & Desktop overrides) -->
+<header class="flex justify-between items-center w-full px-margin-desktop h-16 bg-surface-container border-b border-outline-variant shrink-0 z-30">
+<!-- Mobile Brand -->
+<div class="md:hidden flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary-container">emergency</span>
+<span class="font-headline-md text-[20px] font-bold text-primary-container tracking-tighter">Aegis Industrial</span>
+</div>
+<!-- Desktop Nav Links (Hidden on Mobile) -->
+<div class="hidden md:flex items-center gap-xl h-full font-body-md text-body-md">
+<a class="text-on-surface-variant hover:bg-surface-container-highest transition-colors duration-200 h-full flex items-center px-sm active:scale-95 duration-100" href="#">一般</a>
+<a class="text-on-surface-variant hover:bg-surface-container-highest transition-colors duration-200 h-full flex items-center px-sm active:scale-95 duration-100" href="#">AI 攔截</a>
+<a class="text-primary-container font-bold border-b-2 border-primary-container h-full flex items-center px-sm active:scale-95 duration-100 pb-1" href="#">高風險警報</a>
+</div>
+<!-- Trailing Actions -->
+<div class="flex items-center gap-md">
+<div class="hidden md:flex bg-surface-dim border border-outline-variant rounded-DEFAULT overflow-hidden focus-within:border-primary focus-within:glow-active transition-all">
+<div class="pl-sm flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">search</span>
+</div>
+<input class="bg-transparent border-none text-data-sm font-data-sm text-on-surface placeholder-on-surface-variant focus:ring-0 py-xs px-sm w-48" placeholder="搜尋日誌..." type="text"/>
+</div>
+<button class="text-primary-container border border-primary-container px-md py-xs rounded-DEFAULT font-label-caps text-label-caps hover:bg-primary-container hover:text-on-primary-container transition-all active:scale-95 glow-active hidden lg:block">
+                    模擬器控制
+                </button>
+<div class="flex items-center gap-sm text-on-surface-variant">
+<button class="p-xs hover:bg-surface-container-highest rounded-DEFAULT transition-colors active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-xs hover:bg-surface-container-highest rounded-DEFAULT transition-colors active:scale-95">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Page Canvas -->
+<div class="flex-1 overflow-auto p-gutter md:p-margin-desktop bg-background z-10 flex flex-col gap-gutter">
+<!-- Page Header & Filters -->
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-md mb-md">
+<div>
+<h2 class="font-display-lg text-[32px] md:text-display-lg font-bold text-on-surface tracking-tighter leading-tight mb-xs">系統事件日誌</h2>
+<p class="font-data-sm text-data-sm text-on-surface-variant flex items-center gap-xs">
+<span class="inline-block w-2 h-2 rounded-full bg-secondary-fixed-dim glow-active"></span>
+                        即時串流中。今日已記錄 4,209 筆事件。
+                    </p>
+</div>
+<!-- Filters -->
+<div class="flex flex-wrap items-center gap-sm p-sm bg-surface-container border border-outline-variant rounded-DEFAULT">
+<div class="flex items-center gap-xs border-r border-outline-variant pr-sm">
+<span class="material-symbols-outlined text-on-surface-variant text-[16px]">filter_list</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">層級</span>
+</div>
+<label class="flex items-center gap-xs cursor-pointer group">
+<input checked="" class="form-checkbox bg-surface-dim border-outline-variant text-primary-container rounded-xs focus:ring-primary-container focus:ring-offset-background" type="checkbox"/>
+<span class="font-data-sm text-data-sm text-on-surface group-hover:text-primary-container transition-colors">錯誤 (ERR)</span>
+</label>
+<label class="flex items-center gap-xs cursor-pointer group">
+<input checked="" class="form-checkbox bg-surface-dim border-outline-variant text-tertiary-fixed-dim rounded-xs focus:ring-tertiary-fixed-dim focus:ring-offset-background" type="checkbox"/>
+<span class="font-data-sm text-data-sm text-on-surface group-hover:text-tertiary-fixed-dim transition-colors">警告 (WRN)</span>
+</label>
+<label class="flex items-center gap-xs cursor-pointer group">
+<input class="form-checkbox bg-surface-dim border-outline-variant text-on-surface-variant rounded-xs focus:ring-on-surface-variant focus:ring-offset-background" type="checkbox"/>
+<span class="font-data-sm text-data-sm text-on-surface group-hover:text-on-surface-variant transition-colors">資訊 (INF)</span>
+</label>
+<div class="w-px h-4 bg-outline-variant mx-xs"></div>
+<div class="flex items-center gap-xs border-outline-variant pl-xs">
+<span class="material-symbols-outlined text-on-surface-variant text-[16px]">schedule</span>
+<select class="bg-surface-dim border border-outline-variant text-data-sm font-data-sm text-on-surface rounded-DEFAULT focus:border-primary focus:ring-0 py-xs pl-sm pr-lg h-7 leading-none">
+<option>過去 1 小時</option>
+<option>過去 24 小時</option>
+<option>過去 7 天</option>
+<option>自訂範圍</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Terminal Log Table Container -->
+<div class="flex-1 bg-surface-container border border-outline-variant rounded-lg overflow-hidden flex flex-col shadow-lg relative group">
+<!-- Terminal Header Bar -->
+<div class="h-8 bg-surface-container-high border-b border-outline-variant flex items-center px-sm gap-sm shrink-0">
+<div class="flex gap-xs">
+<div class="w-2.5 h-2.5 rounded-full bg-error border border-error-container"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-tertiary-fixed-dim border border-on-tertiary-container"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-secondary-fixed-dim border border-on-secondary-container"></div>
+</div>
+<span class="font-data-sm text-[10px] text-on-surface-variant opacity-70 ml-2 font-mono">bash: tail -f /var/log/aegis/syslog</span>
+<button class="ml-auto text-on-surface-variant hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined text-[16px]">download</span>
+</button>
+</div>
+<!-- Table Header -->
+<div class="grid grid-cols-[140px_80px_120px_1fr_100px] gap-sm px-md py-sm border-b border-outline-variant bg-surface-container-low font-label-caps text-label-caps text-on-surface-variant shrink-0">
+<div>時間戳記</div>
+<div>層級</div>
+<div>來源</div>
+<div>訊息</div>
+<div class="text-right">操作</div>
+</div>
+<!-- Table Body (Scrollable) -->
+<div class="flex-1 overflow-y-auto font-data-sm text-data-sm bg-surface-dim p-sm space-y-1">
+<!-- Row: Error -->
+<div class="grid grid-cols-[140px_80px_120px_1fr_100px] gap-sm px-sm py-xs border border-error/20 bg-error-container/10 rounded-xs items-center hover:bg-error-container/20 transition-colors">
+<div class="text-on-surface-variant">2023-10-27 14:32:01</div>
+<div><span class="px-xs py-0.5 bg-error text-on-error font-bold rounded-sm text-[10px] glow-error inline-block">ERR</span></div>
+<div class="text-on-surface truncate">Turbine_A_Main</div>
+<div class="text-error truncate">偵測到臨界震動超過安全閾值 (8.4g)。已啟動自動關機程序。</div>
+<div class="text-right">
+<button class="text-primary hover:text-primary-container transition-colors"><span class="material-symbols-outlined text-[18px]">terminal</span></button>
+</div>
+</div>
+<!-- Row: Warning -->
+<div class="grid grid-cols-[140px_80px_120px_1fr_100px] gap-sm px-sm py-xs border border-tertiary-fixed-dim/20 bg-tertiary-container/5 rounded-xs items-center hover:bg-tertiary-container/10 transition-colors">
+<div class="text-on-surface-variant">2023-10-27 14:31:45</div>
+<div><span class="px-xs py-0.5 bg-tertiary-fixed-dim text-on-tertiary font-bold rounded-sm text-[10px] glow-warning inline-block">WRN</span></div>
+<div class="text-on-surface truncate">Coolant_Pump_2</div>
+<div class="text-tertiary-fixed-dim truncate">流量降至正常運作範圍以下 (45L/m)。正在調整輔助閥門。</div>
+<div class="text-right">
+<button class="text-primary hover:text-primary-container transition-colors"><span class="material-symbols-outlined text-[18px]">terminal</span></button>
+</div>
+</div>
+<!-- Row: Info -->
+<div class="grid grid-cols-[140px_80px_120px_1fr_100px] gap-sm px-sm py-xs border border-transparent rounded-xs items-center hover:bg-surface-container-highest transition-colors border-b border-b-outline-variant/20">
+<div class="text-on-surface-variant">2023-10-27 14:30:12</div>
+<div><span class="px-xs py-0.5 bg-surface-variant text-on-surface font-bold rounded-sm text-[10px] inline-block border border-outline-variant">INF</span></div>
+<div class="text-on-surface truncate">Auth_Service</div>
+<div class="text-on-surface truncate opacity-80">使用者 'operator_04' 已透過生物辨識掃描成功驗證。</div>
+<div class="text-right">
+<button class="text-on-surface-variant hover:text-primary-container transition-colors"><span class="material-symbols-outlined text-[18px]">info</span></button>
+</div>
+</div>
+<!-- Row: Info -->
+<div class="grid grid-cols-[140px_80px_120px_1fr_100px] gap-sm px-sm py-xs border border-transparent rounded-xs items-center hover:bg-surface-container-highest transition-colors border-b border-b-outline-variant/20">
+<div class="text-on-surface-variant">2023-10-27 14:28:55</div>
+<div><span class="px-xs py-0.5 bg-surface-variant text-on-surface font-bold rounded-sm text-[10px] inline-block border border-outline-variant">INF</span></div>
+<div class="text-on-surface truncate">Telemetry_Node</div>
+<div class="text-on-surface truncate opacity-80">批次資料同步完成。已處理 1024 個封包。</div>
+<div class="text-right">
+<button class="text-on-surface-variant hover:text-primary-container transition-colors"><span class="material-symbols-outlined text-[18px]">info</span></button>
+</div>
+</div>
+<!-- Row: Error -->
+<div class="grid grid-cols-[140px_80px_120px_1fr_100px] gap-sm px-sm py-xs border border-error/20 bg-error-container/10 rounded-xs items-center hover:bg-error-container/20 transition-colors">
+<div class="text-on-surface-variant">2023-10-27 14:25:10</div>
+<div><span class="px-xs py-0.5 bg-error text-on-error font-bold rounded-sm text-[10px] glow-error inline-block">ERR</span></div>
+<div class="text-on-surface truncate">Net_Gateway_1</div>
+<div class="text-error truncate">連線至外部資料庫逾時。將在 30 秒後重試。</div>
+<div class="text-right">
+<button class="text-primary hover:text-primary-container transition-colors"><span class="material-symbols-outlined text-[18px]">terminal</span></button>
+</div>
+</div>
+<!-- Row: Info -->
+<div class="grid grid-cols-[140px_80px_120px_1fr_100px] gap-sm px-sm py-xs border border-transparent rounded-xs items-center hover:bg-surface-container-highest transition-colors border-b border-b-outline-variant/20">
+<div class="text-on-surface-variant">2023-10-27 14:20:00</div>
+<div><span class="px-xs py-0.5 bg-surface-variant text-on-surface font-bold rounded-sm text-[10px] inline-block border border-outline-variant">INF</span></div>
+<div class="text-on-surface truncate">System_Cron</div>
+<div class="text-on-surface truncate opacity-80">已啟動常規診斷掃描。</div>
+<div class="text-right">
+<button class="text-on-surface-variant hover:text-primary-container transition-colors"><span class="material-symbols-outlined text-[18px]">info</span></button>
+</div>
+</div>
+<!-- Terminal blinking cursor at bottom -->
+<div class="px-sm py-xs text-primary-container opacity-50 flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="w-2 h-4 bg-primary-container animate-pulse inline-block"></span>
+</div>
+</div>
+</div>
+</div>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden w-full h-16 bg-surface-container border-t border-outline-variant flex justify-around items-center px-sm shrink-0 z-40 pb-safe">
+<a class="flex flex-col items-center gap-1 p-2 text-on-surface-variant hover:text-on-surface active:scale-95 transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-caps text-[9px]">儀表板</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-on-surface-variant hover:text-on-surface active:scale-95 transition-all" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-caps text-[9px]">遙測資料</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 bg-primary-container text-on-primary-container font-bold rounded-lg shadow-[0_0_8px_rgba(0,229,255,0.3)] active:scale-95 transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">list_alt</span>
+<span class="font-label-caps text-[9px]">日誌</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-on-surface-variant hover:text-on-surface active:scale-95 transition-all" href="#">
+<span class="material-symbols-outlined">hub</span>
+<span class="font-label-caps text-[9px]">網路</span>
+</a>
+</nav>
+</main>
+</body></html>
