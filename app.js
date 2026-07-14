@@ -253,6 +253,23 @@ function updateStatusSidebar() {
 // ==========================================
 
 function setupEventListeners() {
+  // Mobile Hamburger Toggle
+  const btnHamburger = document.getElementById("btn-hamburger");
+  const sidebar = document.querySelector(".sidebar");
+  const overlay = document.getElementById("sidebar-overlay");
+  
+  if (btnHamburger && sidebar && overlay) {
+    btnHamburger.addEventListener("click", () => {
+      sidebar.classList.toggle("active");
+      overlay.classList.toggle("active");
+    });
+    
+    overlay.addEventListener("click", () => {
+      sidebar.classList.remove("active");
+      overlay.classList.remove("active");
+    });
+  }
+
   // Sidebar Navigation
   document.querySelectorAll(".sidebar-menu .menu-item").forEach(button => {
     button.addEventListener("click", () => {
@@ -261,6 +278,10 @@ function setupEventListeners() {
       
       activeScreen = button.getAttribute("data-screen");
       renderScreen();
+      
+      // Auto close sidebar on mobile navigation
+      if (sidebar) sidebar.classList.remove("active");
+      if (overlay) overlay.classList.remove("active");
     });
   });
   
