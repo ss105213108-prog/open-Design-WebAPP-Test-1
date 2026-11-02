@@ -292,6 +292,7 @@ function setupEventListeners() {
   document.getElementById("btn-save-settings").addEventListener("click", saveSettings);
   
   document.getElementById("setting-api-provider").addEventListener("change", (e) => {
+    updateProviderUI(e.target.value);
     updateModelOptions(e.target.value);
   });
   
