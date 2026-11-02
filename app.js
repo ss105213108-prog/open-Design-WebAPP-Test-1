@@ -48,7 +48,7 @@ let posts = [];
 let activeScreen = "library";
 let activePreviewPlatform = "shopee_feed";
 let generatedCopies = {};
-let currentMonth = new Date(2026, 6, 1); // July 2026
+let currentMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 
 let supabaseClient = null;
 
